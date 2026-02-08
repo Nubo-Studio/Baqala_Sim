@@ -1,4 +1,8 @@
 using UnityEngine;
+using RTLTMPro;
+using Interaction;
+using Systems.Store;
+using Systems.Items;
 
 public class Interactor : MonoBehaviour
 {
@@ -10,6 +14,7 @@ public class Interactor : MonoBehaviour
     [SerializeField] private float throwForce = 6f;
     [SerializeField] private Material validGhostMat;
     [SerializeField] private Material invalidGhostMat;
+    [SerializeField] private RTLTextMeshPro promptText;
 
     public IPickupable HeldItem { get; private set; }
     public IInteractable CurrentTarget { get; private set; }
@@ -30,7 +35,6 @@ public class Interactor : MonoBehaviour
             inputReader.OnThrowPressed += HandleThrow;
         }
         if (playerCamera == null) playerCamera = Camera.main;
-
         if (validGhostMat == null || invalidGhostMat == null) CreateDefaultMaterials();
         ghost.Initialize(validGhostMat, invalidGhostMat);
     }
@@ -68,11 +72,51 @@ public class Interactor : MonoBehaviour
         {
             UpdateTarget();
             ghost.Clear();
+            UpdatePrompt(CurrentTarget?.Prompt);
         }
         else
         {
             CurrentTarget = null;
-            UpdatePlacementVisuals();
+            UpdatePlacementLogic();
+        }
+    }
+
+    private void UpdatePrompt(string text)
+    {
+        if (promptText == null) return;
+        if (string.IsNullOrEmpty(text))
+        {
+            promptText.gameObject.SetActive(false);
+        }
+        else
+        {
+            promptText.gameObject.SetActive(true);
+            promptText.text = text;
+        }
+    }
+
+    private void UpdatePlacementLogic()
+    {
+        int mask = interactMask & ~(1 << 7);
+        if (Physics.Raycast(playerCamera.transform.position, playerCamera.transform.forward, out RaycastHit hit, range, mask))
+        {
+            Shelf shelf = hit.collider.GetComponent<Shelf>();
+            if (shelf != null)
+            {
+                UpdatePrompt(shelf.PlacementPrompt);
+                bool valid = shelf.ValidatePlacement((PickupableItems)HeldItem, hit.point, hit.normal, out Vector3 pos, out Quaternion rot);
+                ghost.UpdateGhost(pos != Vector3.zero ? pos : hit.point, pos != Vector3.zero ? rot : Quaternion.LookRotation(hit.normal), valid, true);
+            }
+            else
+            {
+                UpdatePrompt(null);
+                ghost.UpdateGhost(hit.point, Quaternion.LookRotation(hit.normal), false, true);
+            }
+        }
+        else
+        {
+            UpdatePrompt(null);
+            ghost.UpdateGhost(Vector3.zero, Quaternion.identity, false, false);
         }
     }
 
@@ -84,16 +128,18 @@ public class Interactor : MonoBehaviour
             if (Physics.Raycast(playerCamera.transform.position, playerCamera.transform.forward, out RaycastHit hit, range, mask))
             {
                 Shelf shelf = hit.collider.GetComponent<Shelf>();
-                if (shelf != null && shelf.TryPlaceItem((PickupableItem)HeldItem, hit.point, hit.normal))
+                if (shelf != null && shelf.TryPlaceItem((PickupableItems)HeldItem, hit.point, hit.normal))
                 {
                     HeldItem = null;
                     ghost.Clear();
+                    UpdatePrompt(null);
                     return;
                 }
             }
             HeldItem.Drop(Vector3.zero);
             HeldItem = null;
             ghost.Clear();
+            UpdatePrompt(null);
             return;
         }
 
@@ -103,7 +149,8 @@ public class Interactor : MonoBehaviour
             {
                 pickupable.Pickup(holdPoint, gameObject);
                 HeldItem = pickupable;
-                ghost.CreateGhost(((PickupableItem)HeldItem).gameObject);
+                ghost.CreateGhost(((PickupableItems)HeldItem).gameObject);
+                UpdatePrompt(null);
             }
             else CurrentTarget.Interact(gameObject);
         }
@@ -115,6 +162,7 @@ public class Interactor : MonoBehaviour
         HeldItem.Drop(playerCamera.transform.forward * throwForce);
         HeldItem = null;
         ghost.Clear();
+        UpdatePrompt(null);
     }
 
     private void UpdateTarget()
@@ -124,21 +172,5 @@ public class Interactor : MonoBehaviour
         {
             CurrentTarget = hit.collider.GetComponent<IInteractable>();
         }
-    }
-
-    private void UpdatePlacementVisuals()
-    {
-        int mask = interactMask & ~(1 << 7);
-        if (Physics.Raycast(playerCamera.transform.position, playerCamera.transform.forward, out RaycastHit hit, range, mask))
-        {
-            Shelf shelf = hit.collider.GetComponent<Shelf>();
-            if (shelf != null)
-            {
-                bool valid = shelf.ValidatePlacement((PickupableItem)HeldItem, hit.point, hit.normal, out Vector3 pos, out Quaternion rot);
-                ghost.UpdateGhost(pos != Vector3.zero ? pos : hit.point, pos != Vector3.zero ? rot : Quaternion.LookRotation(hit.normal), valid, true);
-            }
-            else ghost.UpdateGhost(hit.point, Quaternion.LookRotation(hit.normal), false, true);
-        }
-        else ghost.UpdateGhost(Vector3.zero, Quaternion.identity, false, false);
     }
 }

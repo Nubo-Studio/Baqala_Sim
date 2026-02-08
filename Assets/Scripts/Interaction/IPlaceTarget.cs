@@ -1,6 +1,9 @@
-public interface IPlaceTarget
+namespace Interaction
 {
-    string Prompt { get; }
-    bool CanPlace(IPickupable item);
-    void Place(IPickupable item);
+    public interface IPlaceTarget
+    {
+        string Prompt { get; }
+        bool CanPlace(IPickupable item);
+        void Place(IPickupable item);
+    }
 }

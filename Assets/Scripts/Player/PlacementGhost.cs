@@ -1,3 +1,4 @@
+using Systems.Items;
 using UnityEngine;
 
 public class PlacementGhost : MonoBehaviour
@@ -17,13 +18,13 @@ public class PlacementGhost : MonoBehaviour
     {
         Clear();
         currentGhost = Instantiate(prefab);
-        
-        DestroyImmediate(currentGhost.GetComponent<PickupableItem>());
+
+        DestroyImmediate(currentGhost.GetComponent<PickupableItems>());
         DestroyImmediate(currentGhost.GetComponent<Rigidbody>());
         foreach (var c in currentGhost.GetComponentsInChildren<Collider>()) Destroy(c);
-        
+
         ghostRenderers = currentGhost.GetComponentsInChildren<Renderer>();
-        currentGhost.layer = 2; 
+        currentGhost.layer = 2;
         currentGhost.SetActive(false);
     }
 
