@@ -92,10 +92,10 @@ namespace Player
                 inputReader.OnThrowPressed += HandleThrow;
             }
             if (playerCamera == null) playerCamera = Camera.main;
-            
+
             PrepareMaterials();
             WarmupTexts();
-            
+
             ghost.Initialize(validGhostMat, invalidGhostMat);
         }
 
@@ -233,7 +233,8 @@ namespace Player
         {
             if (promptCanvasGroup != null)
             {
-                promptCanvasGroup.alpha = visible ? 1f : 0f;
+                if (visible) promptCanvasGroup.DOFade(1f, 0.2f).SetEase(Ease.OutQuart);
+                else promptCanvasGroup.DOFade(0f, 0.2f).SetEase(Ease.OutQuart);
                 promptCanvasGroup.blocksRaycasts = visible;
             }
         }
@@ -242,7 +243,8 @@ namespace Player
         {
             if (holdCanvasGroup != null)
             {
-                holdCanvasGroup.alpha = visible ? 1f : 0f;
+                if (visible) holdCanvasGroup.DOFade(1f, 0.25f).SetEase(Ease.OutQuart);
+                else holdCanvasGroup.DOFade(0f, 0.25f).SetEase(Ease.OutQuart);
                 holdCanvasGroup.blocksRaycasts = visible;
             }
         }
