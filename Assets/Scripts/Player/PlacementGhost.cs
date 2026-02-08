@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using DG.Tweening;
 
 namespace Player
 {
@@ -6,7 +7,7 @@ namespace Player
     {
         [Header("Settings")]
         [Tooltip("Layer to move the ghost object to (usually Ignore Raycast).")]
-        [SerializeField] private int ghostLayer = 2; // Ignore Raycast
+        [SerializeField] private int ghostLayer = 2;
 
         private Material validMat;
         private Material invalidMat;
@@ -24,25 +25,33 @@ namespace Player
             Clear();
             currentGhost = Instantiate(prefab);
 
-            // Strip unnecessary components to make it purely visual
-
-            // 1. Remove Scripts
+            // Correct order to satisfy [RequireComponent] dependencies:
+            // 1. Remove Scripts (like PickupableItem)
             var scripts = currentGhost.GetComponentsInChildren<MonoBehaviour>();
-            foreach (var script in scripts) DestroyImmediate(script);
+            for (int i = scripts.Length - 1; i >= 0; i--)
+            {
+                if (scripts[i] == null) continue;
+                DestroyImmediate(scripts[i]);
+            }
 
-            // 2. Remove Rigidbody
-            if (currentGhost.TryGetComponent(out Rigidbody rb)) DestroyImmediate(rb);
-
+            // 2. Remove Rigidbody (now that scripts depending on it are gone)
+            if (currentGhost.TryGetComponent(out Rigidbody rb)) 
+                DestroyImmediate(rb);
+            
             // 3. Remove Colliders
             var colliders = currentGhost.GetComponentsInChildren<Collider>();
-            foreach (var col in colliders) DestroyImmediate(col);
+            for (int i = colliders.Length - 1; i >= 0; i--)
+            {
+                if (colliders[i] == null) continue;
+                DestroyImmediate(colliders[i]);
+            }
 
-            // 4. Cache Renderers
             ghostRenderers = currentGhost.GetComponentsInChildren<Renderer>();
-
-            // 5. Set Layer
             SetLayerRecursively(currentGhost, ghostLayer);
-
+            
+            currentGhost.transform.localScale = Vector3.zero;
+            currentGhost.transform.DOScale(prefab.transform.localScale, 0.25f).SetEase(Ease.OutBack);
+            
             currentGhost.SetActive(false);
         }
 
@@ -56,17 +65,14 @@ namespace Player
         {
             if (currentGhost == null) return;
 
-            if (currentGhost.activeSelf != isVisible)
+            if (currentGhost.activeSelf != isVisible) 
                 currentGhost.SetActive(isVisible);
-
+            
             if (!isVisible) return;
 
-            // Use SetPositionAndRotation for atomicity
             currentGhost.transform.SetPositionAndRotation(position, rotation);
 
             Material targetMat = isValid ? validMat : invalidMat;
-
-            // Only update material if changed (optimization)
             if (ghostRenderers != null && ghostRenderers.Length > 0 && ghostRenderers[0].sharedMaterial != targetMat)
             {
                 for (int i = 0; i < ghostRenderers.Length; i++)
@@ -78,7 +84,11 @@ namespace Player
 
         public void Clear()
         {
-            if (currentGhost != null) Destroy(currentGhost);
+            if (currentGhost != null)
+            {
+                currentGhost.transform.DOKill();
+                Destroy(currentGhost);
+            }
             currentGhost = null;
             ghostRenderers = null;
         }

@@ -35,15 +35,20 @@ namespace Player
         [SerializeField] private RTLTextMeshPro itemPriceText;
         [SerializeField] private Image itemIconImage;
 
+        [Header("UI Animation")]
+        [SerializeField, Range(0.05f, 0.5f)] private float uiFadeDuration = 0.15f;
+
         public IPickupable HeldItem { get; private set; }
         public IInteractable CurrentTarget { get; private set; }
 
         private PlacementGhost ghost;
         private static Shader ghostShader;
         private string lastPrompt;
+        private ItemData lastItemData;
         private CanvasGroup promptCanvasGroup;
         private CanvasGroup holdCanvasGroup;
         private RaycastHit rayHit;
+        private float displayedPrice;
 
         private void Awake()
         {
@@ -60,19 +65,20 @@ namespace Player
             {
                 promptCanvasGroup = EnsureCanvasGroup(promptText.gameObject);
                 ConfigureRTLText(promptText);
-                SetCanvasGroupAlpha(promptCanvasGroup, 0);
+                promptCanvasGroup.alpha = 0;
             }
 
             if (holdInstructionsText != null)
             {
                 holdCanvasGroup = EnsureCanvasGroup(holdInstructionsText.gameObject);
                 ConfigureRTLText(holdInstructionsText);
-                SetCanvasGroupAlpha(holdCanvasGroup, 0);
+                holdCanvasGroup.alpha = 0;
             }
 
             if (itemInfoCanvasGroup != null)
             {
-                SetCanvasGroupAlpha(itemInfoCanvasGroup, 0);
+                itemInfoCanvasGroup.alpha = 0;
+                itemInfoCanvasGroup.transform.localScale = Vector3.one * 0.95f;
                 if (itemNameText != null) ConfigureRTLText(itemNameText);
                 if (itemPriceText != null) ConfigureRTLText(itemPriceText);
             }
@@ -163,7 +169,7 @@ namespace Player
         private void Update()
         {
             bool isHolding = HeldItem != null;
-            SetCanvasGroupAlpha(holdCanvasGroup, isHolding ? 1 : 0);
+            FadeCanvasGroup(holdCanvasGroup, isHolding ? 1 : 0);
 
             if (!isHolding)
             {
@@ -197,7 +203,7 @@ namespace Player
                     UpdatePrompt(shelf.PlacementPrompt);
                     bool valid = shelf.ValidatePlacement((PickupableItem)HeldItem, rayHit.point, rayHit.normal, out Vector3 pos, out Quaternion rot);
                     Vector3 ghostPos = pos != Vector3.zero ? pos : rayHit.point;
-                    Quaternion ghostRot = pos != Vector3.zero ? rot : Quaternion.LookRotation(rayHit.normal);
+                    Quaternion ghostRot = pos != Vector3.zero ? rot : Quaternion.LookRotation(rayHit.normal); // Fixed variable from 'hit.normal' to 'rayHit.normal'
                     ghost.UpdateGhost(ghostPos, ghostRot, valid, true);
                 }
                 else
@@ -231,28 +237,46 @@ namespace Player
 
             if (string.IsNullOrEmpty(text))
             {
-                SetCanvasGroupAlpha(promptCanvasGroup, 0);
+                FadeCanvasGroup(promptCanvasGroup, 0);
             }
             else
             {
                 promptText.text = text;
-                SetCanvasGroupAlpha(promptCanvasGroup, 1);
+                FadeCanvasGroup(promptCanvasGroup, 1);
+                promptText.transform.DOPunchScale(Vector3.one * 0.1f, uiFadeDuration, 1, 0.1f);
             }
         }
 
         private void UpdateItemInfo(ItemData data)
         {
             if (itemInfoCanvasGroup == null) return;
+            if (lastItemData == data) return;
+            lastItemData = data;
 
             if (data == null)
             {
-                SetCanvasGroupAlpha(itemInfoCanvasGroup, 0);
+                FadeCanvasGroup(itemInfoCanvasGroup, 0);
+                itemInfoCanvasGroup.transform.DOScale(0.95f, uiFadeDuration).SetEase(Ease.InQuad);
+                displayedPrice = 0;
             }
             else
             {
-                SetCanvasGroupAlpha(itemInfoCanvasGroup, 1);
+                FadeCanvasGroup(itemInfoCanvasGroup, 1);
+                itemInfoCanvasGroup.transform.DOPunchScale(Vector3.one * 0.05f, uiFadeDuration, 1, 0.1f);
+                itemInfoCanvasGroup.transform.DOScale(1f, uiFadeDuration).SetEase(Ease.OutBack);
+
                 if (itemNameText != null) itemNameText.text = $"اسم المنتج: {data.itemNameArabic}";
-                if (itemPriceText != null) itemPriceText.text = $"سعر المنتج: {data.sellPrice} ريال";
+
+                if (itemPriceText != null)
+                {
+                    DOTween.To(() => displayedPrice, x => displayedPrice = x, data.sellPrice, 0.5f)
+                        .SetEase(Ease.OutCubic)
+                        .OnUpdate(() =>
+                        {
+                            itemPriceText.text = $"سعر المنتج: {displayedPrice:0} ريال";
+                        });
+                }
+
                 if (itemIconImage != null)
                 {
                     itemIconImage.sprite = data.icon;
@@ -261,13 +285,14 @@ namespace Player
             }
         }
 
-        private void SetCanvasGroupAlpha(CanvasGroup cg, float alpha)
+        private void FadeCanvasGroup(CanvasGroup cg, float targetAlpha)
         {
-            if (cg != null)
-            {
-                cg.alpha = alpha;
-                cg.blocksRaycasts = alpha > 0;
-            }
+            if (cg == null) return;
+            if (Mathf.Approximately(cg.alpha, targetAlpha)) return;
+
+            cg.DOKill();
+            cg.DOFade(targetAlpha, uiFadeDuration).SetUpdate(true);
+            cg.blocksRaycasts = targetAlpha > 0.5f;
         }
 
         private void HandleInteract()
