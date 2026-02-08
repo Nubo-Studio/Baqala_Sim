@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using DG.Tweening;
-using Interaction;
 using Systems.Items;
 
 namespace Systems.Store
