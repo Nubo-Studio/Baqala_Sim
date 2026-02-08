@@ -1,19 +1,27 @@
 ﻿using UnityEngine;
 using DG.Tweening;
 using Interaction;
+using Systems.Items;
 
 namespace Systems.Store
 {
     [RequireComponent(typeof(BoxCollider))]
     public class Shelf : MonoBehaviour
     {
+        [Header("Configuration")]
+        [Tooltip("Layers considered obstacles for item placement.")]
         [SerializeField] private LayerMask obstacleMask;
-        [SerializeField] private float placeDuration = 0.3f;
-        [SerializeField] private Ease placeEase = Ease.OutQuart;
+        [Tooltip("Arabic prompt shown when holding an item.")]
         [SerializeField] private string placementPrompt = "إضغط E لوضعه";
 
+        [Header("Animation")]
+        [Tooltip("How fast the item slides into place.")]
+        [SerializeField, Range(0.1f, 1f)] private float placeDuration = 0.3f;
+        [Tooltip("The animation curve type.")]
+        [SerializeField] private Ease placeEase = Ease.OutQuart;
+
         private BoxCollider shelfCollider;
-        private Collider[] overlapBuffer = new Collider[1];
+        private readonly Collider[] overlapBuffer = new Collider[1];
 
         public string PlacementPrompt => placementPrompt;
 
@@ -22,13 +30,12 @@ namespace Systems.Store
             shelfCollider = GetComponent<BoxCollider>();
         }
 
-        public bool TryPlaceItem(Items.PickupableItem item, Vector3 hitPoint, Vector3 hitNormal)
+        public bool TryPlaceItem(PickupableItem item, Vector3 hitPoint, Vector3 hitNormal)
         {
             if (ValidatePlacement(item, hitPoint, hitNormal, out Vector3 targetPosition, out Quaternion targetRotation))
             {
                 item.Drop(Vector3.zero);
                 item.transform.SetParent(null, true);
-
                 Rigidbody rb = item.GetComponent<Rigidbody>();
                 if (rb)
                 {
@@ -37,65 +44,40 @@ namespace Systems.Store
                     rb.angularVelocity = Vector3.zero;
                     rb.isKinematic = true;
                 }
-
                 Sequence placeSequence = DOTween.Sequence();
-                placeSequence.Join(item.transform.DOMove(targetPosition, placeDuration).SetEase(placeEase));
+                placeSequence.Join(item.transform.DOMove(targetPosition, placeDuration).SetEase(placeEase));      
                 placeSequence.Join(item.transform.DORotateQuaternion(targetRotation, placeDuration).SetEase(placeEase));
-
-                placeSequence.OnComplete(() =>
-                {
-                    if (rb) rb.detectCollisions = true;
-                });
-
+                placeSequence.OnComplete(() => { if (rb) rb.detectCollisions = true; });
                 return true;
             }
-
             return false;
         }
 
-        public bool ValidatePlacement(Items.PickupableItem item, Vector3 hitPoint, Vector3 hitNormal, out Vector3 targetPosition, out Quaternion targetRotation)
+        public bool ValidatePlacement(PickupableItem item, Vector3 hitPoint, Vector3 hitNormal, out Vector3 targetPosition, out Quaternion targetRotation)
         {
             targetPosition = Vector3.zero;
             targetRotation = Quaternion.identity;
-
             if (Vector3.Dot(hitNormal, transform.up) < 0.99f) return false;
-
             BoxCollider itemCol = item.GetComponent<BoxCollider>();
             if (itemCol == null) return false;
-
             targetRotation = Quaternion.LookRotation(transform.forward, transform.up);
-
-            float itemHalfHeight = (itemCol.size.y * item.transform.localScale.y * 0.5f)
-                                 - (itemCol.center.y * item.transform.localScale.y);
-            itemHalfHeight = Mathf.Abs(itemHalfHeight);
-
+            float itemHalfHeight = Mathf.Abs((itemCol.size.y * item.transform.localScale.y * 0.5f) - (itemCol.center.y * item.transform.localScale.y));
             targetPosition = hitPoint + (hitNormal * (itemHalfHeight + 0.002f));
-
             if (IsPartiallyOffShelf(targetPosition, item, itemCol)) return false;
-
             Vector3 checkSize = Vector3.Scale(itemCol.size, item.transform.localScale) * 0.45f;
-            int hitCount = Physics.OverlapBoxNonAlloc(targetPosition, checkSize, overlapBuffer, targetRotation, obstacleMask);
-            if (hitCount > 0) return false;
-
-            return true;
+            return Physics.OverlapBoxNonAlloc(targetPosition, checkSize, overlapBuffer, targetRotation, obstacleMask) == 0;
         }
 
-        private bool IsPartiallyOffShelf(Vector3 targetWorldPos, Items.PickupableItem item, BoxCollider itemCol) 
+        private bool IsPartiallyOffShelf(Vector3 targetWorldPos, PickupableItem item, BoxCollider itemCol)  
         {
             Vector3 localPos = transform.InverseTransformPoint(targetWorldPos);
-
             float itemHalfWidth = (itemCol.size.x * item.transform.localScale.x) * 0.5f;
             float itemHalfDepth = (itemCol.size.z * item.transform.localScale.z) * 0.5f;
-
             float shelfMaxX = shelfCollider.center.x + (shelfCollider.size.x * 0.5f);
             float shelfMinX = shelfCollider.center.x - (shelfCollider.size.x * 0.5f);
             float shelfMaxZ = shelfCollider.center.z + (shelfCollider.size.z * 0.5f);
             float shelfMinZ = shelfCollider.center.z - (shelfCollider.size.z * 0.5f);
-
-            bool overhangX = (localPos.x + itemHalfWidth > shelfMaxX) || (localPos.x - itemHalfWidth < shelfMinX);
-            bool overhangZ = (localPos.z + itemHalfDepth > shelfMaxZ) || (localPos.z - itemHalfDepth < shelfMinZ);
-
-            return overhangX || overhangZ;
+            return (localPos.x + itemHalfWidth > shelfMaxX) || (localPos.x - itemHalfWidth < shelfMinX) || (localPos.z + itemHalfDepth > shelfMaxZ) || (localPos.z - itemHalfDepth < shelfMinZ);
         }
     }
 }

@@ -244,7 +244,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: 2100000, guid: bb51c286479fe8644893a98f371a77be, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -461,8 +461,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MouseLook
   inputReader: {fileID: 11400000, guid: 7ccd62011b5dbcc49a8d6a5b24b432e8, type: 2}
-  mouseSensitivity: 50
   playerBody: {fileID: 1339386209}
+  mouseSensitivity: 50
 --- !u!1 &349794696
 GameObject:
   m_ObjectHideFlags: 0
@@ -1208,7 +1208,7 @@ Transform:
   m_GameObject: {fileID: 1124360977}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.96509, y: 1.72, z: -1.91069}
+  m_LocalPosition: {x: -0.96509, y: 1.72, z: -2.491}
   m_LocalScale: {x: 0.25, y: 0.25, z: 0.25}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -1648,9 +1648,9 @@ MonoBehaviour:
   obstacleMask:
     serializedVersion: 2
     m_Bits: 129
+  placementPrompt: "\u0625\u0636\u063A\u0637 E \u0644\u0648\u0636\u0639\u0647"
   placeDuration: 0.3
   placeEase: 12
-  placementPrompt: "\u0625\u0636\u063A\u0637 E \u0644\u0648\u0636\u0639\u0647"
 --- !u!1 &1669694455
 GameObject:
   m_ObjectHideFlags: 0

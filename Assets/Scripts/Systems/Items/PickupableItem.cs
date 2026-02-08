@@ -8,11 +8,24 @@ namespace Systems.Items
     [RequireComponent(typeof(Rigidbody))]
     public class PickupableItem : MonoBehaviour, IPickupable
     {
+        [Header("UI")]
+        [Tooltip("Arabic prompt shown when looking at the item.")]
         [SerializeField] private string prompt = "إضغط E للاخذ";
+
+        [Header("Settings")]
+        [Tooltip("Should colliders be disabled while held to avoid physics glitches?")]
         [SerializeField] private bool disableCollidersWhileHeld = true;
+
+        [Header("Hold Offsets")]
+        [Tooltip("Local position offset relative to the hand.")]
         [SerializeField] private Vector3 localHoldPositionOffset = Vector3.zero;
+        [Tooltip("Local rotation offset relative to the hand.")]
         [SerializeField] private Vector3 localHoldEulerOffset = Vector3.zero;
-        [SerializeField] private float pickupDuration = 0.2f;
+
+        [Header("Animations")]
+        [Tooltip("How long the pickup animation takes.")]
+        [SerializeField, Range(0.05f, 1f)] private float pickupDuration = 0.2f;
+        [Tooltip("The animation curve type.")]
         [SerializeField] private Ease pickupEase = Ease.OutBack;
 
         private Rigidbody rb;
@@ -38,7 +51,7 @@ namespace Systems.Items
             transform.DOKill();
             held = true;
             holdPoint = newHoldPoint;
-            if (disableCollidersWhileHeld) foreach (var c in cols) c.enabled = false;
+            if (disableCollidersWhileHeld) ToggleColliders(false);
             rb.interpolation = RigidbodyInterpolation.None;
             rb.useGravity = false;
             rb.isKinematic = true;
@@ -53,12 +66,18 @@ namespace Systems.Items
             transform.DOKill();
             held = false;
             transform.SetParent(null, true);
-            if (disableCollidersWhileHeld) foreach (var c in cols) c.enabled = true;
+            if (disableCollidersWhileHeld) ToggleColliders(true);
             rb.isKinematic = false;
             rb.useGravity = true;
             rb.interpolation = RigidbodyInterpolation.Interpolate;
-            rb.linearVelocity = throwVelocity;
+            if (throwVelocity != Vector3.zero) rb.linearVelocity = throwVelocity;
             holdPoint = null;
+        }
+
+        private void ToggleColliders(bool state)
+        {
+            if (cols == null) return;
+            for (int i = 0; i < cols.Length; i++) cols[i].enabled = state;
         }
     }
 }
