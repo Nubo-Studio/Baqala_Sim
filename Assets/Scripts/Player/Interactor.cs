@@ -32,9 +32,11 @@ namespace Player
         [Tooltip("Material shown when placement is blocked.")]
         [SerializeField] private Material invalidGhostMat;
 
-        [Header("UI")]
-        [Tooltip("The RTL Text component for Arabic prompts.")]
+        [Header("UI - Prompts")]
+        [Tooltip("The RTL Text component for Arabic interaction prompts (Center).")]
         [SerializeField] private RTLTextMeshPro promptText;
+        [Tooltip("The RTL Text component for Holding Instructions (Top Left).")]
+        [SerializeField] private RTLTextMeshPro holdInstructionsText;
 
         public IPickupable HeldItem { get; private set; }
         public IInteractable CurrentTarget { get; private set; }
@@ -43,6 +45,7 @@ namespace Player
         private static Shader ghostShader;
         private string lastPrompt;
         private CanvasGroup promptCanvasGroup;
+        private CanvasGroup holdCanvasGroup;
         private RaycastHit rayHit;
 
         private void Awake()
@@ -51,16 +54,34 @@ namespace Player
             ghost = GetComponent<PlacementGhost>();
             if (ghost == null) ghost = gameObject.AddComponent<PlacementGhost>();
 
+            SetupUI();
+        }
+
+        private void SetupUI()
+        {
             if (promptText != null)
             {
                 promptCanvasGroup = promptText.GetComponent<CanvasGroup>();
                 if (promptCanvasGroup == null) promptCanvasGroup = promptText.gameObject.AddComponent<CanvasGroup>();
-                promptText.ForceFix = true;
-                promptText.FixTags = true;
-                promptText.Farsi = false;
-                promptText.gameObject.SetActive(true);
+                ConfigureRTLText(promptText);
                 SetPromptVisibility(false);
             }
+
+            if (holdInstructionsText != null)
+            {
+                holdCanvasGroup = holdInstructionsText.GetComponent<CanvasGroup>();
+                if (holdCanvasGroup == null) holdCanvasGroup = holdInstructionsText.gameObject.AddComponent<CanvasGroup>();
+                ConfigureRTLText(holdInstructionsText);
+                SetHoldInstructionsVisibility(false);
+            }
+        }
+
+        private void ConfigureRTLText(RTLTextMeshPro text)
+        {
+            text.ForceFix = true;
+            text.FixTags = true;
+            text.Farsi = false;
+            text.gameObject.SetActive(true);
         }
 
         private void Start()
@@ -71,11 +92,13 @@ namespace Player
                 inputReader.OnThrowPressed += HandleThrow;
             }
             if (playerCamera == null) playerCamera = Camera.main;
+            
             PrepareMaterials();
-            WarmupPromptText();
+            WarmupTexts();
+            
             ghost.Initialize(validGhostMat, invalidGhostMat);
         }
-        
+
         private void OnDestroy()
         {
             if (inputReader != null)
@@ -85,12 +108,20 @@ namespace Player
             }
         }
 
-        private void WarmupPromptText()
+        private void WarmupTexts()
         {
-            if (promptText == null) return;
-            promptText.text = "إضغط E للاخذ";
-            promptText.text = "إضغط E لوضعه";
-            promptText.text = string.Empty;
+            if (promptText != null)
+            {
+                promptText.text = "إضغط E للاخذ";
+                promptText.text = "إضغط E لوضعه";
+                promptText.text = string.Empty;
+            }
+
+            if (holdInstructionsText != null)
+            {
+                // Multi-line holding instructions
+                holdInstructionsText.text = "إضغط E لترك\nإضغط Q للرمي";
+            }
         }
 
         private void PrepareMaterials()
@@ -125,7 +156,10 @@ namespace Player
 
         private void Update()
         {
-            if (HeldItem == null)
+            bool isHolding = HeldItem != null;
+            SetHoldInstructionsVisibility(isHolding);
+
+            if (!isHolding)
             {
                 HandleFreeLook();
             }
@@ -204,6 +238,15 @@ namespace Player
             }
         }
 
+        private void SetHoldInstructionsVisibility(bool visible)
+        {
+            if (holdCanvasGroup != null)
+            {
+                holdCanvasGroup.alpha = visible ? 1f : 0f;
+                holdCanvasGroup.blocksRaycasts = visible;
+            }
+        }
+
         private void HandleInteract()
         {
             if (HeldItem != null) AttemptPlace();
@@ -219,17 +262,13 @@ namespace Player
                 {
                     if (shelf.TryPlaceItem((PickupableItem)HeldItem, rayHit.point, rayHit.normal))
                     {
-                        HeldItem = null;
-                        ghost.Clear();
-                        UpdatePrompt(null);
+                        ClearHeldItem();
                         return;
                     }
                 }
             }
             HeldItem.Drop(Vector3.zero);
-            HeldItem = null;
-            ghost.Clear();
-            UpdatePrompt(null);
+            ClearHeldItem();
         }
 
         private void AttemptPickupOrInteract()
@@ -248,6 +287,11 @@ namespace Player
         {
             if (HeldItem == null) return;
             HeldItem.Drop(playerCamera.transform.forward * throwForce);
+            ClearHeldItem();
+        }
+
+        private void ClearHeldItem()
+        {
             HeldItem = null;
             ghost.Clear();
             UpdatePrompt(null);
