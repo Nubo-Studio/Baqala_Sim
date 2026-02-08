@@ -300,9 +300,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 115693029}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5d91c2f5fb7913c49aef8e91acf86d30, type: 3}
+  m_Script: {fileID: 11500000, guid: d632d7f0bc111904db754a857affcde8, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Systems.Items.PickupableItems
+  m_EditorClassIdentifier: Assembly-CSharp::Systems.Items.PickupableItem
   prompt: "\u0625\u0636\u063A\u0637 E \u0644\u0644\u0623\u062E\u0630"
   disableCollidersWhileHeld: 1
   localHoldPositionOffset: {x: 0, y: 0, z: 0}
@@ -1223,9 +1223,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 1124360977}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5d91c2f5fb7913c49aef8e91acf86d30, type: 3}
+  m_Script: {fileID: 11500000, guid: d632d7f0bc111904db754a857affcde8, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Systems.Items.PickupableItems
+  m_EditorClassIdentifier: Assembly-CSharp::Systems.Items.PickupableItem
   prompt: "\u0625\u0636\u063A\u0637 E \u0644\u0644\u0623\u062E\u0630"
   disableCollidersWhileHeld: 1
   localHoldPositionOffset: {x: 0, y: 0, z: 0}

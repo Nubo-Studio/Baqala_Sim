@@ -1,8 +1,10 @@
-using UnityEngine;
+﻿using UnityEngine;
 using RTLTMPro;
 using Interaction;
 using Systems.Store;
 using Systems.Items;
+using DG.Tweening;
+using System.Collections;
 
 public class Interactor : MonoBehaviour
 {
@@ -20,11 +22,31 @@ public class Interactor : MonoBehaviour
     public IInteractable CurrentTarget { get; private set; }
 
     private PlacementGhost ghost;
+    private static Shader ghostShader;
+    private string lastPrompt;
+    private CanvasGroup promptCanvasGroup;
 
     private void Awake()
     {
+        DOTween.Init();
         ghost = GetComponent<PlacementGhost>();
         if (ghost == null) ghost = gameObject.AddComponent<PlacementGhost>();
+        
+        if (promptText != null)
+        {
+            // Ensure performance components
+            promptCanvasGroup = promptText.GetComponent<CanvasGroup>();
+            if (promptCanvasGroup == null) promptCanvasGroup = promptText.gameObject.AddComponent<CanvasGroup>();
+            
+            // Force best RTL settings for performance and correctness
+            promptText.ForceFix = true;
+            promptText.FixTags = true;
+            promptText.Farsi = false; // Set to true if you need Farsi specific characters
+            
+            // Ensure the text object is ready but invisible
+            promptText.gameObject.SetActive(true);
+            SetPromptVisibility(false);
+        }
     }
 
     private void Start()
@@ -34,22 +56,39 @@ public class Interactor : MonoBehaviour
             inputReader.OnInteractPressed += HandleInteract;
             inputReader.OnThrowPressed += HandleThrow;
         }
+
         if (playerCamera == null) playerCamera = Camera.main;
-        if (validGhostMat == null || invalidGhostMat == null) CreateDefaultMaterials();
+
+        PrepareMaterials();
+
+        if (promptText != null)
+        {
+            // Pre-process strings during loading to warm up the RTL cache
+            promptText.text = "إضغط E للاخذ";
+            promptText.text = "إضغط E لوضعه";
+            promptText.text = "";
+        }
+
         ghost.Initialize(validGhostMat, invalidGhostMat);
     }
 
-    private void CreateDefaultMaterials()
+    private void PrepareMaterials()
     {
+        if (ghostShader == null)
+        {
+            ghostShader = Shader.Find("Universal Render Pipeline/Lit");
+            if (ghostShader == null) ghostShader = Shader.Find("Standard");
+        }
+
         if (validGhostMat == null)
         {
-            validGhostMat = new Material(Shader.Find("Standard"));
+            validGhostMat = new Material(ghostShader);
             validGhostMat.color = new Color(0, 1, 0, 0.4f);
             SetupTransparent(validGhostMat);
         }
         if (invalidGhostMat == null)
         {
-            invalidGhostMat = new Material(Shader.Find("Standard"));
+            invalidGhostMat = new Material(ghostShader);
             invalidGhostMat.color = new Color(1, 0, 0, 0.4f);
             SetupTransparent(invalidGhostMat);
         }
@@ -71,7 +110,7 @@ public class Interactor : MonoBehaviour
         if (HeldItem == null)
         {
             UpdateTarget();
-            ghost.Clear();
+            if (ghost.isActiveAndEnabled) ghost.Clear();
             UpdatePrompt(CurrentTarget?.Prompt);
         }
         else
@@ -84,14 +123,27 @@ public class Interactor : MonoBehaviour
     private void UpdatePrompt(string text)
     {
         if (promptText == null) return;
+        
+        if (lastPrompt == text) return;
+        lastPrompt = text;
+
         if (string.IsNullOrEmpty(text))
         {
-            promptText.gameObject.SetActive(false);
+            SetPromptVisibility(false);
         }
         else
         {
-            promptText.gameObject.SetActive(true);
             promptText.text = text;
+            SetPromptVisibility(true);
+        }
+    }
+
+    private void SetPromptVisibility(bool visible)
+    {
+        if (promptCanvasGroup != null)
+        {
+            promptCanvasGroup.alpha = visible ? 1f : 0f;
+            promptCanvasGroup.blocksRaycasts = visible;
         }
     }
 
@@ -104,7 +156,7 @@ public class Interactor : MonoBehaviour
             if (shelf != null)
             {
                 UpdatePrompt(shelf.PlacementPrompt);
-                bool valid = shelf.ValidatePlacement((PickupableItems)HeldItem, hit.point, hit.normal, out Vector3 pos, out Quaternion rot);
+                bool valid = shelf.ValidatePlacement((PickupableItem)HeldItem, hit.point, hit.normal, out Vector3 pos, out Quaternion rot);
                 ghost.UpdateGhost(pos != Vector3.zero ? pos : hit.point, pos != Vector3.zero ? rot : Quaternion.LookRotation(hit.normal), valid, true);
             }
             else
@@ -128,7 +180,7 @@ public class Interactor : MonoBehaviour
             if (Physics.Raycast(playerCamera.transform.position, playerCamera.transform.forward, out RaycastHit hit, range, mask))
             {
                 Shelf shelf = hit.collider.GetComponent<Shelf>();
-                if (shelf != null && shelf.TryPlaceItem((PickupableItems)HeldItem, hit.point, hit.normal))
+                if (shelf != null && shelf.TryPlaceItem((PickupableItem)HeldItem, hit.point, hit.normal))
                 {
                     HeldItem = null;
                     ghost.Clear();
@@ -149,7 +201,7 @@ public class Interactor : MonoBehaviour
             {
                 pickupable.Pickup(holdPoint, gameObject);
                 HeldItem = pickupable;
-                ghost.CreateGhost(((PickupableItems)HeldItem).gameObject);
+                ghost.CreateGhost(((PickupableItem)HeldItem).gameObject);
                 UpdatePrompt(null);
             }
             else CurrentTarget.Interact(gameObject);

@@ -1,4 +1,4 @@
-using DG.Tweening;
+﻿using DG.Tweening;
 using UnityEngine;
 using Interaction;
 
@@ -6,9 +6,9 @@ namespace Systems.Items
 {
     [DisallowMultipleComponent]
     [RequireComponent(typeof(Rigidbody))]
-    public class PickupableItems : MonoBehaviour, IPickupable
+    public class PickupableItem : MonoBehaviour, IPickupable
     {
-        [SerializeField] private string prompt;
+        [SerializeField] private string prompt = "إضغط E للاخذ";
         [SerializeField] private bool disableCollidersWhileHeld = true;
         [SerializeField] private Vector3 localHoldPositionOffset = Vector3.zero;
         [SerializeField] private Vector3 localHoldEulerOffset = Vector3.zero;

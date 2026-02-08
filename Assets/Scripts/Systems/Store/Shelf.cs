@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using DG.Tweening;
 using Interaction;
 
@@ -10,7 +10,7 @@ namespace Systems.Store
         [SerializeField] private LayerMask obstacleMask;
         [SerializeField] private float placeDuration = 0.3f;
         [SerializeField] private Ease placeEase = Ease.OutQuart;
-        [SerializeField] private string placementPrompt;
+        [SerializeField] private string placementPrompt = "إضغط E لوضعه";
 
         private BoxCollider shelfCollider;
         private Collider[] overlapBuffer = new Collider[1];
@@ -22,7 +22,7 @@ namespace Systems.Store
             shelfCollider = GetComponent<BoxCollider>();
         }
 
-        public bool TryPlaceItem(Items.PickupableItems item, Vector3 hitPoint, Vector3 hitNormal)
+        public bool TryPlaceItem(Items.PickupableItem item, Vector3 hitPoint, Vector3 hitNormal)
         {
             if (ValidatePlacement(item, hitPoint, hitNormal, out Vector3 targetPosition, out Quaternion targetRotation))
             {
@@ -53,7 +53,7 @@ namespace Systems.Store
             return false;
         }
 
-        public bool ValidatePlacement(Items.PickupableItems item, Vector3 hitPoint, Vector3 hitNormal, out Vector3 targetPosition, out Quaternion targetRotation)
+        public bool ValidatePlacement(Items.PickupableItem item, Vector3 hitPoint, Vector3 hitNormal, out Vector3 targetPosition, out Quaternion targetRotation)
         {
             targetPosition = Vector3.zero;
             targetRotation = Quaternion.identity;
@@ -80,7 +80,7 @@ namespace Systems.Store
             return true;
         }
 
-        private bool IsPartiallyOffShelf(Vector3 targetWorldPos, Items.PickupableItems item, BoxCollider itemCol)
+        private bool IsPartiallyOffShelf(Vector3 targetWorldPos, Items.PickupableItem item, BoxCollider itemCol) 
         {
             Vector3 localPos = transform.InverseTransformPoint(targetWorldPos);
 

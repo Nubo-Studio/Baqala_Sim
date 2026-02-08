@@ -1,4 +1,3 @@
-using Systems.Items;
 using UnityEngine;
 
 public class PlacementGhost : MonoBehaviour
@@ -18,13 +17,17 @@ public class PlacementGhost : MonoBehaviour
     {
         Clear();
         currentGhost = Instantiate(prefab);
-
-        DestroyImmediate(currentGhost.GetComponent<PickupableItems>());
-        DestroyImmediate(currentGhost.GetComponent<Rigidbody>());
-        foreach (var c in currentGhost.GetComponentsInChildren<Collider>()) Destroy(c);
-
+        
+        var scripts = currentGhost.GetComponentsInChildren<MonoBehaviour>();
+        for (int i = 0; i < scripts.Length; i++) Destroy(scripts[i]);
+        
+        if (currentGhost.TryGetComponent(out Rigidbody rb)) Destroy(rb);
+        
+        var colliders = currentGhost.GetComponentsInChildren<Collider>();
+        for (int i = 0; i < colliders.Length; i++) Destroy(colliders[i]);
+        
         ghostRenderers = currentGhost.GetComponentsInChildren<Renderer>();
-        currentGhost.layer = 2;
+        currentGhost.layer = 2; 
         currentGhost.SetActive(false);
     }
 
@@ -32,16 +35,16 @@ public class PlacementGhost : MonoBehaviour
     {
         if (currentGhost == null) return;
 
-        currentGhost.SetActive(isVisible);
+        if (currentGhost.activeSelf != isVisible) currentGhost.SetActive(isVisible);
         if (!isVisible) return;
 
-        currentGhost.transform.position = position;
-        currentGhost.transform.rotation = rotation;
+        currentGhost.transform.SetPositionAndRotation(position, rotation);
 
         Material targetMat = isValid ? validMat : invalidMat;
         for (int i = 0; i < ghostRenderers.Length; i++)
         {
-            ghostRenderers[i].sharedMaterial = targetMat;
+            if (ghostRenderers[i].sharedMaterial != targetMat)
+                ghostRenderers[i].sharedMaterial = targetMat;
         }
     }
 
