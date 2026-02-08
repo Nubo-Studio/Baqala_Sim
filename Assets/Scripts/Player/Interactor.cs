@@ -4,6 +4,7 @@ using Interaction;
 using Systems.Store;
 using Systems.Items;
 using DG.Tweening;
+using UnityEngine.UI;
 
 namespace Player
 {
@@ -11,32 +12,28 @@ namespace Player
     public class Interactor : MonoBehaviour
     {
         [Header("References")]
-        [Tooltip("Link to the InputReader ScriptableObject.")]
         [SerializeField] private InputReader inputReader;
-        [Tooltip("The main FPS camera.")]
         [SerializeField] private Camera playerCamera;
-        [Tooltip("Where the item will be positioned when held.")]
         [SerializeField] private Transform holdPoint;
 
         [Header("Settings")]
-        [Tooltip("Distance the player can reach to interact.")]
         [SerializeField, Range(1f, 10f)] private float range = 4f;
-        [Tooltip("Which layers the raycast should hit.")]
         [SerializeField] private LayerMask interactMask;
-        [Tooltip("How hard the item is thrown.")]
         [SerializeField, Range(1f, 20f)] private float throwForce = 6f;
 
         [Header("Visuals (Ghost)")]
-        [Tooltip("Material shown when placement is valid.")]
         [SerializeField] private Material validGhostMat;
-        [Tooltip("Material shown when placement is blocked.")]
         [SerializeField] private Material invalidGhostMat;
 
         [Header("UI - Prompts")]
-        [Tooltip("The RTL Text component for Arabic interaction prompts (Center).")]
         [SerializeField] private RTLTextMeshPro promptText;
-        [Tooltip("The RTL Text component for Holding Instructions (Top Left).")]
         [SerializeField] private RTLTextMeshPro holdInstructionsText;
+
+        [Header("UI - Item Info Card")]
+        [SerializeField] private CanvasGroup itemInfoCanvasGroup;
+        [SerializeField] private RTLTextMeshPro itemNameText;
+        [SerializeField] private RTLTextMeshPro itemPriceText;
+        [SerializeField] private Image itemIconImage;
 
         public IPickupable HeldItem { get; private set; }
         public IInteractable CurrentTarget { get; private set; }
@@ -61,19 +58,30 @@ namespace Player
         {
             if (promptText != null)
             {
-                promptCanvasGroup = promptText.GetComponent<CanvasGroup>();
-                if (promptCanvasGroup == null) promptCanvasGroup = promptText.gameObject.AddComponent<CanvasGroup>();
+                promptCanvasGroup = EnsureCanvasGroup(promptText.gameObject);
                 ConfigureRTLText(promptText);
-                SetPromptVisibility(false);
+                SetCanvasGroupAlpha(promptCanvasGroup, 0);
             }
 
             if (holdInstructionsText != null)
             {
-                holdCanvasGroup = holdInstructionsText.GetComponent<CanvasGroup>();
-                if (holdCanvasGroup == null) holdCanvasGroup = holdInstructionsText.gameObject.AddComponent<CanvasGroup>();
+                holdCanvasGroup = EnsureCanvasGroup(holdInstructionsText.gameObject);
                 ConfigureRTLText(holdInstructionsText);
-                SetHoldInstructionsVisibility(false);
+                SetCanvasGroupAlpha(holdCanvasGroup, 0);
             }
+
+            if (itemInfoCanvasGroup != null)
+            {
+                SetCanvasGroupAlpha(itemInfoCanvasGroup, 0);
+                if (itemNameText != null) ConfigureRTLText(itemNameText);
+                if (itemPriceText != null) ConfigureRTLText(itemPriceText);
+            }
+        }
+
+        private CanvasGroup EnsureCanvasGroup(GameObject obj)
+        {
+            var cg = obj.GetComponent<CanvasGroup>();
+            return cg != null ? cg : obj.AddComponent<CanvasGroup>();
         }
 
         private void ConfigureRTLText(RTLTextMeshPro text)
@@ -116,10 +124,8 @@ namespace Player
                 promptText.text = "إضغط E لوضعه";
                 promptText.text = string.Empty;
             }
-
             if (holdInstructionsText != null)
             {
-                // Multi-line holding instructions
                 holdInstructionsText.text = "إضغط E لترك\nإضغط Q للرمي";
             }
         }
@@ -157,16 +163,20 @@ namespace Player
         private void Update()
         {
             bool isHolding = HeldItem != null;
-            SetHoldInstructionsVisibility(isHolding);
+            SetCanvasGroupAlpha(holdCanvasGroup, isHolding ? 1 : 0);
 
             if (!isHolding)
             {
                 HandleFreeLook();
+                UpdateItemInfo(null);
             }
             else
             {
                 CurrentTarget = null;
                 HandleHoldingItem();
+
+                if (HeldItem is PickupableItem item)
+                    UpdateItemInfo(item.Data);
             }
         }
 
@@ -218,34 +228,45 @@ namespace Player
             if (promptText == null) return;
             if (lastPrompt == text) return;
             lastPrompt = text;
+
             if (string.IsNullOrEmpty(text))
             {
-                SetPromptVisibility(false);
+                SetCanvasGroupAlpha(promptCanvasGroup, 0);
             }
             else
             {
                 promptText.text = text;
-                SetPromptVisibility(true);
+                SetCanvasGroupAlpha(promptCanvasGroup, 1);
             }
         }
 
-        private void SetPromptVisibility(bool visible)
+        private void UpdateItemInfo(ItemData data)
         {
-            if (promptCanvasGroup != null)
+            if (itemInfoCanvasGroup == null) return;
+
+            if (data == null)
             {
-                if (visible) promptCanvasGroup.DOFade(1f, 0.2f).SetEase(Ease.OutQuart);
-                else promptCanvasGroup.DOFade(0f, 0.2f).SetEase(Ease.OutQuart);
-                promptCanvasGroup.blocksRaycasts = visible;
+                SetCanvasGroupAlpha(itemInfoCanvasGroup, 0);
+            }
+            else
+            {
+                SetCanvasGroupAlpha(itemInfoCanvasGroup, 1);
+                if (itemNameText != null) itemNameText.text = $"اسم المنتج: {data.itemNameArabic}";
+                if (itemPriceText != null) itemPriceText.text = $"سعر المنتج: {data.sellPrice} ريال";
+                if (itemIconImage != null)
+                {
+                    itemIconImage.sprite = data.icon;
+                    itemIconImage.gameObject.SetActive(data.icon != null);
+                }
             }
         }
 
-        private void SetHoldInstructionsVisibility(bool visible)
+        private void SetCanvasGroupAlpha(CanvasGroup cg, float alpha)
         {
-            if (holdCanvasGroup != null)
+            if (cg != null)
             {
-                if (visible) holdCanvasGroup.DOFade(1f, 0.25f).SetEase(Ease.OutQuart);
-                else holdCanvasGroup.DOFade(0f, 0.25f).SetEase(Ease.OutQuart);
-                holdCanvasGroup.blocksRaycasts = visible;
+                cg.alpha = alpha;
+                cg.blocksRaycasts = alpha > 0;
             }
         }
 
@@ -297,6 +318,7 @@ namespace Player
             HeldItem = null;
             ghost.Clear();
             UpdatePrompt(null);
+            UpdateItemInfo(null);
         }
     }
 }

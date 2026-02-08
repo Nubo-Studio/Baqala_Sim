@@ -8,6 +8,10 @@ namespace Systems.Items
     [RequireComponent(typeof(Rigidbody))]
     public class PickupableItem : MonoBehaviour, IPickupable
     {
+        [Header("Data")]
+        [Tooltip("The ScriptableObject containing all product information.")]
+        [SerializeField] private ItemData itemData;
+
         [Header("UI")]
         [Tooltip("Arabic prompt shown when looking at the item.")]
         [SerializeField] private string prompt = "إضغط E للاخذ";
@@ -33,6 +37,7 @@ namespace Systems.Items
         private Transform holdPoint;
         private bool held;
 
+        public ItemData Data => itemData;
         public string Prompt => prompt;
         public bool IsHeld => held;
 
