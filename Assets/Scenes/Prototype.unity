@@ -1271,8 +1271,8 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 384
   throwForce: 6
-  validGhostMat: {fileID: 2100000, guid: d61124de4610b014192eabe3f5614f52, type: 2}
-  invalidGhostMat: {fileID: 2100000, guid: bb51c286479fe8644893a98f371a77be, type: 2}
+  validGhostMat: {fileID: 2100000, guid: 6819a0ed7fd2d0a40bf1a6f08b79857c, type: 2}
+  invalidGhostMat: {fileID: 2100000, guid: 154dc65ac75666f4aadde90c64dc2a3d, type: 2}
 --- !u!1 &1345115618
 GameObject:
   m_ObjectHideFlags: 0
