@@ -777,10 +777,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: Shelf (6)
       objectReference: {fileID: 0}
-    - target: {fileID: 1313084964549827902, guid: 1d6291a489bc74d40bf982f01706f3e7, type: 3}
-      propertyPath: m_StaticEditorFlags
-      value: 2147483647
-      objectReference: {fileID: 0}
     - target: {fileID: 7478241529040288840, guid: 1d6291a489bc74d40bf982f01706f3e7, type: 3}
       propertyPath: m_LocalPosition.x
       value: 4.373
@@ -1451,6 +1447,17 @@ Transform:
   - {fileID: 214138838}
   m_Father: {fileID: 2077720634}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &462260651 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1150483181037555581, guid: 1d6291a489bc74d40bf982f01706f3e7, type: 3}
+  m_PrefabInstance: {fileID: 214138837}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b288b851837ef144ea928e153e2a0ef8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Systems.Store.Shelf
 --- !u!1001 &476308021
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2247,6 +2254,17 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 743140594}
   m_CullTransparentMesh: 1
+--- !u!114 &806341933 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1150483181037555581, guid: 1d6291a489bc74d40bf982f01706f3e7, type: 3}
+  m_PrefabInstance: {fileID: 476308021}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b288b851837ef144ea928e153e2a0ef8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Systems.Store.Shelf
 --- !u!1 &832575517
 GameObject:
   m_ObjectHideFlags: 0
@@ -2647,6 +2665,37 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 946340358}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &982719599
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 982719600}
+  m_Layer: 0
+  m_Name: Checkout Point
+  m_TagString: Untagged
+  m_Icon: {fileID: 5132851093641282708, guid: 0000000000000000d000000000000000, type: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &982719600
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 982719599}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 1, z: 0, w: 0}
+  m_LocalPosition: {x: -2.027, y: 0.5, z: -12.091}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1479455214}
+  m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
 --- !u!1 &994216934
 GameObject:
   m_ObjectHideFlags: 0
@@ -2679,7 +2728,7 @@ MonoBehaviour:
   customerPrefab: {fileID: 2774211045008592933, guid: 209ae2689f85bc941b6adbca0345accf, type: 3}
   spawnPoint: {fileID: 1781074191}
   storeEntrance: {fileID: 447428391}
-  spawnInterval: 3
+  spawnInterval: 10
 --- !u!4 &994216936
 Transform:
   m_ObjectHideFlags: 0
@@ -2807,6 +2856,37 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 994757274}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &1005010001
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1005010002}
+  m_Layer: 0
+  m_Name: Exit Point
+  m_TagString: Untagged
+  m_Icon: {fileID: 5132851093641282708, guid: 0000000000000000d000000000000000, type: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1005010002
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1005010001}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 1, z: 0, w: 0}
+  m_LocalPosition: {x: -7.73, y: 0.5, z: -12.091}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1479455214}
+  m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
 --- !u!1 &1007680318
 GameObject:
   m_ObjectHideFlags: 0
@@ -2878,6 +2958,60 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1007680318}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1091095516
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1091095518}
+  - component: {fileID: 1091095517}
+  m_Layer: 0
+  m_Name: StoreManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1091095517
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1091095516}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc72524eed535494ba52a09951f455ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Systems.Store.StoreManager
+  shelves:
+  - {fileID: 6537345318715163827}
+  - {fileID: 1991352262}
+  - {fileID: 1302364811}
+  - {fileID: 806341933}
+  - {fileID: 1783982571}
+  - {fileID: 462260651}
+  checkoutPoints:
+  - {fileID: 982719600}
+  exitPoint: {fileID: 1005010002}
+--- !u!4 &1091095518
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1091095516}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -3335,6 +3469,17 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 7478241529040288840, guid: 1d6291a489bc74d40bf982f01706f3e7, type: 3}
   m_PrefabInstance: {fileID: 1302364809}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1302364811 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1150483181037555581, guid: 1d6291a489bc74d40bf982f01706f3e7, type: 3}
+  m_PrefabInstance: {fileID: 1302364809}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b288b851837ef144ea928e153e2a0ef8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Systems.Store.Shelf
 --- !u!1 &1339386207
 GameObject:
   m_ObjectHideFlags: 0
@@ -3759,6 +3904,8 @@ Transform:
   m_Children:
   - {fileID: 447428391}
   - {fileID: 1781074191}
+  - {fileID: 982719600}
+  - {fileID: 1005010002}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1510629695
@@ -3955,6 +4102,17 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 7478241529040288840, guid: 1d6291a489bc74d40bf982f01706f3e7, type: 3}
   m_PrefabInstance: {fileID: 1783982569}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1783982571 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1150483181037555581, guid: 1d6291a489bc74d40bf982f01706f3e7, type: 3}
+  m_PrefabInstance: {fileID: 1783982569}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b288b851837ef144ea928e153e2a0ef8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Systems.Store.Shelf
 --- !u!1 &1806428726
 GameObject:
   m_ObjectHideFlags: 0
@@ -4245,6 +4403,17 @@ Transform:
   - {fileID: 317472373}
   m_Father: {fileID: 2077720634}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1991352262 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1150483181037555581, guid: 1d6291a489bc74d40bf982f01706f3e7, type: 3}
+  m_PrefabInstance: {fileID: 1510629695}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b288b851837ef144ea928e153e2a0ef8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Systems.Store.Shelf
 --- !u!1 &2031956976
 GameObject:
   m_ObjectHideFlags: 0
@@ -4609,10 +4778,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: Shelf (1)
       objectReference: {fileID: 0}
-    - target: {fileID: 1313084964549827902, guid: 1d6291a489bc74d40bf982f01706f3e7, type: 3}
-      propertyPath: m_StaticEditorFlags
-      value: 2147483647
-      objectReference: {fileID: 0}
     - target: {fileID: 7478241529040288840, guid: 1d6291a489bc74d40bf982f01706f3e7, type: 3}
       propertyPath: m_LocalPosition.x
       value: 4.373
@@ -4663,6 +4828,17 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 7478241529040288840, guid: 1d6291a489bc74d40bf982f01706f3e7, type: 3}
   m_PrefabInstance: {fileID: 6537345318715163825}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &6537345318715163827 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1150483181037555581, guid: 1d6291a489bc74d40bf982f01706f3e7, type: 3}
+  m_PrefabInstance: {fileID: 6537345318715163825}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b288b851837ef144ea928e153e2a0ef8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Systems.Store.Shelf
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -4680,6 +4856,7 @@ SceneRoots:
   - {fileID: 1479455214}
   - {fileID: 2031956977}
   - {fileID: 994216936}
+  - {fileID: 1091095518}
   - {fileID: 1817078121}
   - {fileID: 1124360983}
   - {fileID: 115693035}

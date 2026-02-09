@@ -1,6 +1,7 @@
-﻿using DG.Tweening;
+using DG.Tweening;
 using UnityEngine;
 using Interaction;
+using Systems.Store;
 
 namespace Systems.Items
 {
@@ -14,7 +15,7 @@ namespace Systems.Items
 
         [Header("UI")]
         [Tooltip("Arabic prompt shown when looking at the item.")]
-        [SerializeField] private string prompt = "إضغط E للاخذ";
+        [SerializeField] private string prompt = "???? E ?????";
 
         [Header("Settings")]
         [Tooltip("Should colliders be disabled while held to avoid physics glitches?")]
@@ -53,6 +54,13 @@ namespace Systems.Items
 
         public void Pickup(Transform newHoldPoint, GameObject interactor)
         {
+            // Notify shelf if we were on one
+            Shelf shelf = GetComponentInParent<Shelf>();
+            if (shelf != null)
+            {
+                shelf.ReleaseItem(this);
+            }
+
             transform.DOKill();
             held = true;
             holdPoint = newHoldPoint;

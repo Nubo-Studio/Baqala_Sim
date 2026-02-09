@@ -15,6 +15,7 @@ namespace Systems.Customers.States
             else
             {
                 Debug.LogWarning("[EnteringState] No Store Entrance assigned!");
+                customer.SwitchState(new BrowsingState(customer));
             }
         }
 
@@ -22,7 +23,7 @@ namespace Systems.Customers.States
         {
             if (customer.HasReachedDestination())
             {
-                Debug.Log("[Customer] Entered Store. Switching to Browsing...");
+                customer.SwitchState(new BrowsingState(customer));
             }
         }
     }

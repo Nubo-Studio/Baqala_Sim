@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using DG.Tweening;
 
 namespace Player
@@ -25,8 +25,6 @@ namespace Player
             Clear();
             currentGhost = Instantiate(prefab);
 
-            // Correct order to satisfy [RequireComponent] dependencies:
-            // 1. Remove Scripts (like PickupableItem)
             var scripts = currentGhost.GetComponentsInChildren<MonoBehaviour>();
             for (int i = scripts.Length - 1; i >= 0; i--)
             {
@@ -34,11 +32,9 @@ namespace Player
                 DestroyImmediate(scripts[i]);
             }
 
-            // 2. Remove Rigidbody (now that scripts depending on it are gone)
             if (currentGhost.TryGetComponent(out Rigidbody rb)) 
                 DestroyImmediate(rb);
-            
-            // 3. Remove Colliders
+
             var colliders = currentGhost.GetComponentsInChildren<Collider>();
             for (int i = colliders.Length - 1; i >= 0; i--)
             {
@@ -48,10 +44,10 @@ namespace Player
 
             ghostRenderers = currentGhost.GetComponentsInChildren<Renderer>();
             SetLayerRecursively(currentGhost, ghostLayer);
-            
-            currentGhost.transform.localScale = Vector3.zero;
-            currentGhost.transform.DOScale(prefab.transform.localScale, 0.25f).SetEase(Ease.OutBack);
-            
+
+            // INSTANT Scale setting for the ghost
+            currentGhost.transform.localScale = prefab.transform.lossyScale;
+
             currentGhost.SetActive(false);
         }
 
@@ -65,9 +61,9 @@ namespace Player
         {
             if (currentGhost == null) return;
 
-            if (currentGhost.activeSelf != isVisible) 
+            if (currentGhost.activeSelf != isVisible)
                 currentGhost.SetActive(isVisible);
-            
+
             if (!isVisible) return;
 
             currentGhost.transform.SetPositionAndRotation(position, rotation);
@@ -94,3 +90,4 @@ namespace Player
         }
     }
 }
+
