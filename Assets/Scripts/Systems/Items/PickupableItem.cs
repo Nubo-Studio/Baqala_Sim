@@ -15,22 +15,19 @@ namespace Systems.Items
 
         [Header("UI")]
         [Tooltip("Arabic prompt shown when looking at the item.")]
-        [SerializeField] private string prompt = "???? E ?????";
+        [SerializeField] private string prompt;
+        [SerializeField] private string scanPrompt;
 
         [Header("Settings")]
         [Tooltip("Should colliders be disabled while held to avoid physics glitches?")]
         [SerializeField] private bool disableCollidersWhileHeld = true;
 
         [Header("Hold Offsets")]
-        [Tooltip("Local position offset relative to the hand.")]
         [SerializeField] private Vector3 localHoldPositionOffset = Vector3.zero;
-        [Tooltip("Local rotation offset relative to the hand.")]
         [SerializeField] private Vector3 localHoldEulerOffset = Vector3.zero;
 
         [Header("Animations")]
-        [Tooltip("How long the pickup animation takes.")]
         [SerializeField, Range(0.05f, 1f)] private float pickupDuration = 0.2f;
-        [Tooltip("The animation curve type.")]
         [SerializeField] private Ease pickupEase = Ease.OutBack;
 
         private Rigidbody rb;
@@ -38,8 +35,12 @@ namespace Systems.Items
         private Transform holdPoint;
         private bool held;
 
+        // Scanning State
+        private CheckoutCounter currentCounter;
+        public bool IsScannable => currentCounter != null;
+
         public ItemData Data => itemData;
-        public string Prompt => prompt;
+        public string Prompt => IsScannable ? scanPrompt : prompt;
         public bool IsHeld => held;
 
         private void Awake()
@@ -50,16 +51,32 @@ namespace Systems.Items
         }
 
         public bool CanInteract(GameObject interactor) => !held;
-        public void Interact(GameObject interactor) { }
+
+        public void Interact(GameObject interactor)
+        {
+            if (IsScannable && currentCounter != null)
+            {
+                currentCounter.TryScanItem(this);
+            }
+        }
+
+        public void SetScannable(CheckoutCounter counter)
+        {
+            currentCounter = counter;
+        }
+
+        public void ClearScannable()
+        {
+            currentCounter = null;
+        }
 
         public void Pickup(Transform newHoldPoint, GameObject interactor)
         {
-            // Notify shelf if we were on one
             Shelf shelf = GetComponentInParent<Shelf>();
-            if (shelf != null)
-            {
-                shelf.ReleaseItem(this);
-            }
+            if (shelf != null) shelf.ReleaseItem(this);
+
+            // If picked up, it is no longer scannable (it left the counter)
+            ClearScannable();
 
             transform.DOKill();
             held = true;

@@ -9,11 +9,14 @@ namespace Systems.Store
 
         [Header("Store Locations")]
         [SerializeField] private List<Shelf> shelves = new List<Shelf>();
-        [SerializeField] private List<Transform> checkoutPoints = new List<Transform>();
+        [SerializeField] private CheckoutCounter checkoutCounter;
         [SerializeField] private Transform exitPoint;
+        
+        [Header("Prefabs")]
+        [SerializeField] private Cash cashPrefab;
 
         public IReadOnlyList<Shelf> Shelves => shelves;
-        public IReadOnlyList<Transform> CheckoutPoints => checkoutPoints;
+        public CheckoutCounter CheckoutCounter => checkoutCounter;
         public Transform ExitPoint => exitPoint;
 
         private void Awake()
@@ -28,11 +31,13 @@ namespace Systems.Store
                 return;
             }
 
-            // Auto-discover shelves if the list is empty
             if (shelves.Count == 0)
             {
                 shelves.AddRange(FindObjectsByType<Shelf>(FindObjectsSortMode.None));
             }
+
+            if (checkoutCounter == null)
+                checkoutCounter = FindAnyObjectByType<CheckoutCounter>();
         }
 
         public Shelf GetRandomShelf()
@@ -41,10 +46,19 @@ namespace Systems.Store
             return shelves[Random.Range(0, shelves.Count)];
         }
 
-        public Transform GetRandomCheckoutPoint()
+        public void SpawnCash(float amount, Transform spawnPoint)
         {
-            if (checkoutPoints == null || checkoutPoints.Count == 0) return null;
-            return checkoutPoints[Random.Range(0, checkoutPoints.Count)];
+            if (cashPrefab != null && spawnPoint != null)
+            {
+                Cash newCash = Instantiate(cashPrefab, spawnPoint.position, spawnPoint.rotation);
+                newCash.Setup(amount);
+            }
+            else
+            {
+                Debug.LogWarning("[StoreManager] Cannot spawn cash! Missing Prefab or SpawnPoint.");
+                // Fallback: auto-process
+                checkoutCounter.ProcessPayment(amount);
+            }
         }
     }
 }

@@ -18,7 +18,6 @@ namespace Systems.Customers.States
         public override void Enter()
         {
             timer = 0;
-            // Look at the shelf
             customer.transform.LookAt(new Vector3(shelf.transform.position.x, customer.transform.position.y, shelf.transform.position.z));
         }
 
@@ -36,21 +35,19 @@ namespace Systems.Customers.States
             PickupableItem item = shelf.GetRandomItem();
             if (item != null)
             {
-                // Simple visual "pickup"
                 shelf.ReleaseItem(item);
                 
-                // For now, we just disable the item to simulate it being in a basket
-                // In a future step, we can parent it to the customer hand
-                item.gameObject.SetActive(false);
+                // Add to customer inventory
+                customer.AddItemToBasket(item);
                 
-                Debug.Log($"[Customer] Picked up {item.Data.itemNameArabic}");
+                Debug.Log($"[Customer] Picked up {item.Data.itemNameArabic}. Basket Count: {customer.ItemsInBasket.Count}");
                 
-                // After picking, go to checkout
+                // For this prototype, pick 1 item then checkout. 
+                // Later we can loop this to pick multiple items.
                 customer.SwitchState(new CheckoutState(customer));
             }
             else
             {
-                // Someone took it first! Back to browsing
                 customer.SwitchState(new BrowsingState(customer));
             }
         }

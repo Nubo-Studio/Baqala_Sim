@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using Core.Events;
 using Systems.Store;
 using Systems.Items;
@@ -12,7 +12,7 @@ namespace Player.States
         public override void Enter()
         {
             events.RaiseHeldStateChanged(true);
-            
+
             if (ctx.HeldItem is MonoBehaviour mono && mono.TryGetComponent(out PickupableItem item))
             {
                 events.RaiseItemInfoChanged(item.Data);
@@ -21,15 +21,14 @@ namespace Player.States
 
         public override void Update()
         {
-            // Mask out items so we don't hit what we hold
             int mask = ctx.InteractMask & ~(1 << 7);
-            
+
             if (ctx.Raycast(mask, out RaycastHit hit))
             {
                 if (hit.collider.TryGetComponent(out Shelf shelf))
                 {
                     events.RaisePromptChanged(shelf.PlacementPrompt);
-                    
+
                     bool valid = false;
                     Vector3 pos = hit.point;
                     Quaternion rot = Quaternion.LookRotation(hit.normal);

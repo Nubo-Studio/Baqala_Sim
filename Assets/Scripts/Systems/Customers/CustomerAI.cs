@@ -1,6 +1,8 @@
 using UnityEngine;
 using UnityEngine.AI;
+using System.Collections.Generic;
 using Systems.Customers.States;
+using Systems.Items;
 
 namespace Systems.Customers
 {
@@ -12,6 +14,9 @@ namespace Systems.Customers
         [Tooltip("Where the customer goes immediately after spawning.")]
         [SerializeField] private Transform storeEntrance;
 
+        [Header("Inventory")]
+        [SerializeField] private List<PickupableItem> itemsInBasket = new List<PickupableItem>();
+
         [Header("Debug")]
         [SerializeField] private string currentStateName;
 
@@ -21,6 +26,7 @@ namespace Systems.Customers
         // Public Accessors
         public NavMeshAgent Agent => agent;
         public Transform StoreEntrance => storeEntrance;
+        public List<PickupableItem> ItemsInBasket => itemsInBasket;
 
         public void Initialize(Transform entrance)
         {
@@ -34,7 +40,6 @@ namespace Systems.Customers
 
         private void Start()
         {
-            // Start in the Entering State
             SwitchState(new EnteringState(this));
         }
 
@@ -62,6 +67,16 @@ namespace Systems.Customers
             if (agent.pathPending) return false;
             if (agent.remainingDistance > stoppingDistance) return false;
             return agent.hasPath || agent.velocity.sqrMagnitude == 0f;
+        }
+
+        public void AddItemToBasket(PickupableItem item)
+        {
+            if (item != null)
+            {
+                itemsInBasket.Add(item);
+                item.gameObject.SetActive(false); // Hide it for now, pretending it is in a basket
+                item.transform.SetParent(transform); // Carry it with us
+            }
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using Core.Events;
 using Interaction;
 using Systems.Items;
@@ -26,7 +26,7 @@ namespace Player.States
                     return;
                 }
             }
-            
+
             ctx.SetTarget(null);
             events.RaisePromptChanged(null);
         }
@@ -35,16 +35,23 @@ namespace Player.States
         {
             if (ctx.CurrentTarget != null && ctx.CurrentTarget.CanInteract(ctx.gameObject))
             {
+                // SPECIAL CASE: If it is a scannable item, scan it instead of picking it up
+                if (ctx.CurrentTarget is PickupableItem item && item.IsScannable)
+                {
+                    item.Interact(ctx.gameObject);
+                    return;
+                }
+
                 if (ctx.CurrentTarget is IPickupable pickupable)
                 {
                     pickupable.Pickup(ctx.HoldPoint, ctx.gameObject);
                     ctx.SetHeldItem(pickupable);
-                    
-                    if (pickupable is MonoBehaviour mono && mono.TryGetComponent(out PickupableItem item))
+
+                    if (pickupable is MonoBehaviour mono && mono.TryGetComponent(out PickupableItem pItem))
                     {
                         ctx.Ghost.CreateGhost(mono.gameObject);
                     }
-                    
+
                     ctx.SwitchState(new HoldingState(ctx, events));
                 }
                 else
