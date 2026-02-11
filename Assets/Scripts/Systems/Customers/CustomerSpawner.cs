@@ -11,6 +11,7 @@ namespace Systems.Customers
         [SerializeField] private Transform storeEntrance;
         
         [Header("Timing")]
+        [SerializeField] private float initialDelay = 10f;
         [SerializeField] private float spawnInterval = 10f;
 
         private void Start()
@@ -20,6 +21,8 @@ namespace Systems.Customers
 
         private IEnumerator SpawnRoutine()
         {
+            yield return new WaitForSeconds(initialDelay);
+            
             while (true)
             {
                 SpawnCustomer();
