@@ -16,6 +16,7 @@ namespace Systems.Customers
 
         [Header("Inventory")]
         [SerializeField] private List<PickupableItem> itemsInBasket = new List<PickupableItem>();
+        private int targetItemCount;
 
         [Header("Debug")]
         [SerializeField] private string currentStateName;
@@ -27,6 +28,7 @@ namespace Systems.Customers
         public NavMeshAgent Agent => agent;
         public Transform StoreEntrance => storeEntrance;
         public List<PickupableItem> ItemsInBasket => itemsInBasket;
+        public int TargetItemCount => targetItemCount;
 
         public void Initialize(Transform entrance)
         {
@@ -36,6 +38,7 @@ namespace Systems.Customers
         private void Awake()
         {
             agent = GetComponent<NavMeshAgent>();
+            targetItemCount = Random.Range(1, 6);
         }
 
         private void Start()
@@ -66,7 +69,7 @@ namespace Systems.Customers
         {
             if (agent.pathPending) return false;
             if (agent.remainingDistance > stoppingDistance) return false;
-            return agent.hasPath || agent.velocity.sqrMagnitude == 0f;
+            return !agent.hasPath || agent.velocity.sqrMagnitude == 0f;
         }
 
         public void AddItemToBasket(PickupableItem item)

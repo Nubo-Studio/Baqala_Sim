@@ -24,7 +24,7 @@ namespace Systems.Store
         
         // Payment State
         private bool paymentReceived = false;
-        private float cashOnCounter = 0f;
+        private float totalPaymentReceived = 0f;
 
         private PickupableItem[] dropPointContents;
 
@@ -58,7 +58,7 @@ namespace Systems.Store
             scannedItems.Clear();
             totalBill = 0f;
             paymentReceived = false;
-            cashOnCounter = 0f;
+            totalPaymentReceived = 0f;
             
             OnTransactionStarted?.Invoke();
             OnTotalUpdated?.Invoke(0f);
@@ -71,6 +71,7 @@ namespace Systems.Store
             currentCustomer = null;
             scannedItems.Clear();
             totalBill = 0f;
+            totalPaymentReceived = 0f;
             OnTransactionEnded?.Invoke();
         }
 
@@ -152,16 +153,17 @@ namespace Systems.Store
         // Called by Player picking up the cash object
         public void ProcessPayment(float amount)
         {
-            cashOnCounter = amount;
-            paymentReceived = true;
-            OnPaymentProcessed?.Invoke(amount, totalBill);
+            totalPaymentReceived += amount;
             
-            // Logic to give change could be handled here or by player interaction
-            float change = amount - totalBill;
-            if (change > 0)
+            if (totalPaymentReceived >= totalBill)
             {
-                Debug.Log($"[Counter] Change due: {change}");
-                // In future: Spawn "Change" object for customer to take?
+                paymentReceived = true;
+                OnPaymentProcessed?.Invoke(totalPaymentReceived, totalBill);
+            }
+            else
+            {
+                 // Optional: Partial payment UI update?
+                 Debug.Log($"[Counter] Partial payment received: {totalPaymentReceived}/{totalBill}");
             }
         }
     }

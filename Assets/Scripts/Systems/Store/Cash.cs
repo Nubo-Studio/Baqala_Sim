@@ -6,10 +6,10 @@ namespace Systems.Store
     public class Cash : MonoBehaviour, IInteractable
     {
         [SerializeField] private float amount = 0f;
-        [SerializeField] private string prompt = "???? E ???? ?????";
+        [SerializeField] private string promptTemplate = "إضغط E لأخذ {0} ريال";
 
         public float Amount => amount;
-        public string Prompt => prompt;
+        public string Prompt => string.Format(promptTemplate, amount);
 
         public void Setup(float value)
         {

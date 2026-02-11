@@ -42,6 +42,7 @@ namespace UI
                 counter.OnTotalUpdated += HandleTotalUpdated;
                 counter.OnTransactionStarted += HandleTransactionStarted;
                 counter.OnTransactionEnded += HandleTransactionEnded;
+                counter.OnPaymentProcessed += HandlePaymentProcessed;
             }
             
             // Initial State
@@ -58,6 +59,7 @@ namespace UI
                 counter.OnTotalUpdated -= HandleTotalUpdated;
                 counter.OnTransactionStarted -= HandleTransactionStarted;
                 counter.OnTransactionEnded -= HandleTransactionEnded;
+                counter.OnPaymentProcessed -= HandlePaymentProcessed;
             }
         }
 
@@ -69,7 +71,20 @@ namespace UI
 
         private void HandleTransactionEnded()
         {
-            // Delay or immediate? For now, let's keep the last bill visible until next customer
+            // The UI will be reset by HandlePaymentProcessed or the next transaction
+        }
+
+        private void HandlePaymentProcessed(float received, float total)
+        {
+            ShowPaymentScreen(received, total);
+            
+            // Auto-reset to main screen after 3 seconds
+            DOVirtual.DelayedCall(3f, () => 
+            {
+                if (this == null) return;
+                ShowMainScreen();
+                ClearList();
+            });
         }
 
         private void HandleItemScanned(PickupableItem item)

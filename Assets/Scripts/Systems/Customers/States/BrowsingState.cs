@@ -18,6 +18,19 @@ namespace Systems.Customers.States
 
         private void FindNextShelf()
         {
+            if (!StoreManager.Instance.HasAnyItems())
+            {
+                if (customer.ItemsInBasket.Count > 0)
+                {
+                    customer.SwitchState(new CheckoutState(customer));
+                }
+                else
+                {
+                    customer.SwitchState(new LeavingState(customer));
+                }
+                return;
+            }
+
             targetShelf = StoreManager.Instance.GetRandomShelf();
             
             if (targetShelf != null)
