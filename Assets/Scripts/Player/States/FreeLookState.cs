@@ -32,27 +32,31 @@ namespace Player.States
         }
 
         public override void HandleInput()
+{
+    if (ctx.CurrentTarget != null && ctx.CurrentTarget.CanInteract(ctx.gameObject))
+    {
+        if (ctx.CurrentTarget is IMovable movable)
         {
-            if (ctx.CurrentTarget != null && ctx.CurrentTarget.CanInteract(ctx.gameObject))
-            {
-                if (ctx.CurrentTarget is IPickupable pickupable)
-                {
-                    pickupable.Pickup(ctx.HoldPoint, ctx.gameObject);
-                    ctx.SetHeldItem(pickupable);
-                    
-                    if (pickupable is MonoBehaviour mono && mono.TryGetComponent(out PickupableItem item))
-                    {
-                        ctx.Ghost.CreateGhost(mono.gameObject);
-                    }
-                    
-                    ctx.SwitchState(new HoldingState(ctx, events));
-                }
-                else
-                {
-                    ctx.CurrentTarget.Interact(ctx.gameObject);
-                }
-            }
+            ctx.SwitchState(new MovingShelfState(ctx, events, movable));
         }
+        else if (ctx.CurrentTarget is IPickupable pickupable)
+        {
+            pickupable.Pickup(ctx.HoldPoint, ctx.gameObject);
+            ctx.SetHeldItem(pickupable);
+            
+            if (pickupable is MonoBehaviour mono && mono.TryGetComponent(out PickupableItem item))
+            {
+                ctx.Ghost.CreateGhost(mono.gameObject);
+            }
+            
+            ctx.SwitchState(new HoldingState(ctx, events));
+        }
+        else
+        {
+            ctx.CurrentTarget.Interact(ctx.gameObject);
+        }
+    }
+}
 
         public override void Exit() { }
     }

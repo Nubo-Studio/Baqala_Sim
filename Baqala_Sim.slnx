@@ -5,4 +5,5 @@
   <Project Path="Assembly-CSharp-firstpass.csproj" />
   <Project Path="RTLTMPro-Tests.csproj" />
   <Project Path="RTLTMPro-Editor.csproj" />
+  <Project Path="Bezi.Editor.csproj" />
 </Solution>

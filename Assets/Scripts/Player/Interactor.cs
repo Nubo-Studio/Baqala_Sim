@@ -74,7 +74,13 @@ namespace Player
         private void OnThrow()
         {
             if (currentState is HoldingState holdingState)
+            {
                 holdingState.HandleThrow();
+            }
+            else if (currentState is MovingShelfState movingShelfState)
+            {
+                movingShelfState.HandleCancel();
+            }
         }
 
         public void SwitchState(InteractionState newState)
