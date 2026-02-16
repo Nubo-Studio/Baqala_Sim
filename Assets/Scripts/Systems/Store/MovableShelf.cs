@@ -8,7 +8,7 @@ namespace Systems.Store
     public class MovableShelf : MonoBehaviour, IMovable
     {
         [Header("UI")]
-        [SerializeField] private string movePrompt = "إضغط E لتحريك";
+        [SerializeField] private string movePrompt = "إضغط E للتحريك";
 
         [Header("Placement Settings")]
         [SerializeField] private LayerMask placementMask;

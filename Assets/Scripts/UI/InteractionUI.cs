@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.UI;
 using RTLTMPro;
 using DG.Tweening;
@@ -31,6 +31,7 @@ namespace UI
 
         private float displayedPrice;
         private string currentPrompt;
+        private string defaultHoldText = "إضغط E لترك\nإضغط Q للرمي";
 
         private void Awake()
         {
@@ -45,7 +46,7 @@ namespace UI
             if (holdCanvas) holdCanvas.alpha = 0;
             if (infoCanvas) infoCanvas.alpha = 0;
 
-            if (holdText) holdText.text = "إضغط E لترك\nإضغط Q للرمي";
+            if (holdText) holdText.text = defaultHoldText;
         }
 
         private void OnEnable()
@@ -54,6 +55,7 @@ namespace UI
             events.OnPromptChanged += HandlePrompt;
             events.OnHeldStateChanged += HandleHeldState;
             events.OnItemInfoChanged += HandleItemInfo;
+            events.OnHoldTextChanged += HandleHoldText;
         }
 
         private void OnDisable()
@@ -62,6 +64,7 @@ namespace UI
             events.OnPromptChanged -= HandlePrompt;
             events.OnHeldStateChanged -= HandleHeldState;
             events.OnItemInfoChanged -= HandleItemInfo;
+            events.OnHoldTextChanged -= HandleHoldText;
         }
 
         private void HandlePrompt(string text)
@@ -84,6 +87,13 @@ namespace UI
         private void HandleHeldState(bool isHolding)
         {
             Fade(holdCanvas, isHolding ? 1 : 0);
+            if (!isHolding && holdText) holdText.text = defaultHoldText;
+        }
+
+        private void HandleHoldText(string text)
+        {
+            if (holdText == null) return;
+            holdText.text = string.IsNullOrEmpty(text) ? defaultHoldText : text;
         }
 
         private void HandleItemInfo(ItemData data)

@@ -7,7 +7,6 @@ namespace Player.States
     public class MovingShelfState : InteractionState
     {
         private readonly IMovable movableShelf;
-        private readonly string placePrompt = "إضغط E لوضعه | Q للإلغاء";
 
         public MovingShelfState(Interactor context, InteractionEvents events, IMovable shelf) 
             : base(context, events)
@@ -17,7 +16,9 @@ namespace Player.States
 
         public override void Enter()
         {
-            events.RaisePromptChanged(placePrompt);
+            events.RaisePromptChanged(null);
+            events.RaiseHeldStateChanged(true);
+            events.RaiseHoldTextChanged("إضغط E للوضع\nإضغط Q للإلغاء");
             movableShelf.StartMoving(ctx.gameObject);
             ctx.Ghost.CreateGhost(movableShelf.Transform.gameObject);
         }
@@ -93,7 +94,8 @@ namespace Player.States
 
         public override void Exit()
         {
-            events.RaisePromptChanged(null);
+            events.RaiseHeldStateChanged(false);
+            events.RaiseHoldTextChanged(null);
         }
     }
 }
