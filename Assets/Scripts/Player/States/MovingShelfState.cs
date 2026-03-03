@@ -8,7 +8,8 @@ namespace Player.States
     {
         private readonly IMovable movableShelf;
         private float pendingYRotation = 0f;
-        private const float RotationStep = 10f;
+        private const float RotationStep = 30f;
+        private const float gridSize = 0.5f;
 
         public MovingShelfState(Interactor context, InteractionEvents events, IMovable shelf)
             : base(context, events)
@@ -42,6 +43,7 @@ namespace Player.States
                 {
                     bool valid = shelf.ValidatePlacement(hit.point, hit.normal, hit.collider.gameObject.layer, out Vector3 pos, out Quaternion rot);
 
+                    pos = SnapToGrid(pos, gridSize);
                     Quaternion rotatedRot = rot * Quaternion.Euler(0f, pendingYRotation, 0f);
 
                     if (pos != Vector3.zero)
@@ -71,6 +73,7 @@ namespace Player.States
                 {
                     if (shelf.ValidatePlacement(hit.point, hit.normal, hit.collider.gameObject.layer, out Vector3 pos, out Quaternion rot))
                     {
+                        pos = SnapToGrid(pos, gridSize);
                         Quaternion rotatedRot = rot * Quaternion.Euler(0f, pendingYRotation, 0f);
                         movableShelf.MoveTo(pos, rotatedRot);
                         ExitState();
@@ -92,6 +95,16 @@ namespace Player.States
             movableShelf.CancelMoving();
             ExitState();
         }
+
+        private Vector3 SnapToGrid(Vector3 position, float gridSize)
+        {
+            return new Vector3(
+                Mathf.Round(position.x / gridSize) * gridSize,
+                position.y,
+                Mathf.Round(position.z / gridSize) * gridSize
+            );
+        }
+
 
         private void ExitState()
         {
