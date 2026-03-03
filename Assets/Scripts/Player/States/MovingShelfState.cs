@@ -7,8 +7,10 @@ namespace Player.States
     public class MovingShelfState : InteractionState
     {
         private readonly IMovable movableShelf;
+        private float pendingYRotation = 0f;
+        private const float RotationStep = 10f;
 
-        public MovingShelfState(Interactor context, InteractionEvents events, IMovable shelf) 
+        public MovingShelfState(Interactor context, InteractionEvents events, IMovable shelf)
             : base(context, events)
         {
             movableShelf = shelf;
@@ -18,30 +20,34 @@ namespace Player.States
         {
             events.RaisePromptChanged(null);
             events.RaiseHeldStateChanged(true);
-            events.RaiseHoldTextChanged("إضغط E للوضع\nإضغط Q للإلغاء");
+            events.RaiseHoldTextChanged("إضغط E للوضع\nإضغط Q للإلغاء\nZ دوران يميناً \n X دوران يساراً");
             movableShelf.StartMoving(ctx.gameObject);
             ctx.Ghost.CreateGhost(movableShelf.Transform.gameObject);
+            ctx.InputReader.OnRotatePressed += HandleRotate;
+        }
+
+        private void HandleRotate(float direction)
+        {
+            pendingYRotation += direction * RotationStep;
         }
 
         public override void Update()
         {
             LayerMask placementMask = movableShelf.PlacementMask;
             float maxDistance = movableShelf.MaxPlacementDistance;
-            
+
             if (Physics.Raycast(ctx.PlayerCamera.transform.position, ctx.PlayerCamera.transform.forward, out RaycastHit hit, maxDistance, placementMask))
             {
                 if (movableShelf is MonoBehaviour mono && mono.TryGetComponent(out Systems.Store.MovableShelf shelf))
                 {
                     bool valid = shelf.ValidatePlacement(hit.point, hit.normal, hit.collider.gameObject.layer, out Vector3 pos, out Quaternion rot);
-                    
+
+                    Quaternion rotatedRot = rot * Quaternion.Euler(0f, pendingYRotation, 0f);
+
                     if (pos != Vector3.zero)
-                    {
-                        ctx.Ghost.UpdateGhost(pos, rot, valid, true);
-                    }
+                        ctx.Ghost.UpdateGhost(pos, rotatedRot, valid, true);
                     else
-                    {
-                        ctx.Ghost.UpdateGhost(hit.point, Quaternion.LookRotation(hit.normal), false, true);
-                    }
+                        ctx.Ghost.UpdateGhost(hit.point, rotatedRot, false, true);
                 }
                 else
                 {
@@ -58,14 +64,15 @@ namespace Player.States
         {
             LayerMask placementMask = movableShelf.PlacementMask;
             float maxDistance = movableShelf.MaxPlacementDistance;
-            
+
             if (Physics.Raycast(ctx.PlayerCamera.transform.position, ctx.PlayerCamera.transform.forward, out RaycastHit hit, maxDistance, placementMask))
             {
                 if (movableShelf is MonoBehaviour mono && mono.TryGetComponent(out Systems.Store.MovableShelf shelf))
                 {
                     if (shelf.ValidatePlacement(hit.point, hit.normal, hit.collider.gameObject.layer, out Vector3 pos, out Quaternion rot))
                     {
-                        movableShelf.MoveTo(pos, rot);
+                        Quaternion rotatedRot = rot * Quaternion.Euler(0f, pendingYRotation, 0f);
+                        movableShelf.MoveTo(pos, rotatedRot);
                         ExitState();
                         return;
                     }
@@ -94,6 +101,7 @@ namespace Player.States
 
         public override void Exit()
         {
+            ctx.InputReader.OnRotatePressed -= HandleRotate;
             events.RaiseHeldStateChanged(false);
             events.RaiseHoldTextChanged(null);
         }

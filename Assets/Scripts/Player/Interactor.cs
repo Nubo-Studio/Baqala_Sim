@@ -32,6 +32,7 @@ namespace Player
         public LayerMask InteractMask => interactMask;
         public float ThrowForce => throwForce;
         public PlacementGhost Ghost => ghost;
+        public InputReader InputReader => inputReader;
         public IPickupable HeldItem { get; private set; }
         public IInteractable CurrentTarget { get; private set; }
 

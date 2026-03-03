@@ -8,10 +8,12 @@ public class InputReader : ScriptableObject, IPlayerActions
 {
     public event Action OnInteractPressed;
     public event Action OnThrowPressed;
+    public event Action<float> OnRotatePressed;
 
     public Vector2 MoveInput { get; private set; }
     public Vector2 LookInput { get; private set; }
     public bool IsSprinting { get; private set; }
+    public float RotateInput { get; private set; }
 
     private PlayerControls playerControls;
 
@@ -49,6 +51,11 @@ public class InputReader : ScriptableObject, IPlayerActions
     public void OnThrow(InputAction.CallbackContext context)
     {
         if (context.performed) OnThrowPressed?.Invoke();
+    }
+
+    public void OnRotate(InputAction.CallbackContext context)
+    {
+        if (context.performed) OnRotatePressed?.Invoke(context.ReadValue<float>());
     }
 
     private void OnDisable()
