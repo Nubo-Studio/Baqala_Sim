@@ -37,7 +37,7 @@ namespace Player.States
     {
         if (ctx.CurrentTarget is IMovable movable)
         {
-            ctx.SwitchState(new MovingShelfState(ctx, events, movable));
+            ctx.SwitchState(new MovingObjectState(ctx, events, movable));
         }
         else if (ctx.CurrentTarget is IPickupable pickupable)
         {

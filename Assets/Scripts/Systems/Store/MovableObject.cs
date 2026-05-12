@@ -5,7 +5,7 @@ using Interaction;
 namespace Systems.Store
 {
     [RequireComponent(typeof(BoxCollider))]
-    public class MovableShelf : MonoBehaviour, IMovable
+    public class MovableObject : MonoBehaviour, IMovable
     {
         [Header("UI")]
         [SerializeField] private string movePrompt = "إضغط E للتحريك";
@@ -16,12 +16,18 @@ namespace Systems.Store
         [SerializeField] private float maxPlacementDistance = 5f;
         [SerializeField] private float placementHeightOffset = 0.01f;
 
+        [Header("Current Place Ghost")]
+        [SerializeField] private Material currentPlaceMaterial;
+
         [Header("Animation")]
         [SerializeField, Range(0.1f, 1f)] private float moveDuration = 0.4f;
         [SerializeField] private Ease moveEase = Ease.OutQuart;
 
-        private BoxCollider shelfCollider;
+        private BoxCollider[] objectColliders;
+        private BoxCollider rootCollider;
         private bool isBeingMoved;
+        private Renderer[] objectRenderers;
+        private Material[] originalMaterials;
 
         public string Prompt => movePrompt;
         public Transform Transform => transform;
@@ -30,7 +36,10 @@ namespace Systems.Store
 
         private void Awake()
         {
-            shelfCollider = GetComponent<BoxCollider>();
+            objectColliders = GetComponentsInChildren<BoxCollider>();
+            rootCollider = GetComponent<BoxCollider>();
+            objectRenderers = GetComponentsInChildren<Renderer>();
+
         }
 
         public bool CanInteract(GameObject interactor)
@@ -43,6 +52,33 @@ namespace Systems.Store
         public void StartMoving(GameObject interactor)
         {
             isBeingMoved = true;
+
+            foreach (BoxCollider col in objectColliders)
+                col.enabled = false;
+
+            if (currentPlaceMaterial == null) return;
+
+            originalMaterials = new Material[objectRenderers.Length];
+            for (int i = 0; i < objectRenderers.Length; i++)
+            {
+                originalMaterials[i] = objectRenderers[i].sharedMaterial;
+                objectRenderers[i].sharedMaterial = currentPlaceMaterial;
+            }
+        }
+
+        private void RestoreObject()
+        {
+            foreach (BoxCollider col in objectColliders)
+                col.enabled = true;
+
+            if (originalMaterials == null) return;
+
+            for (int i = 0; i < objectRenderers.Length && i < originalMaterials.Length; i++)
+            {
+                objectRenderers[i].sharedMaterial = originalMaterials[i];
+            }
+
+            originalMaterials = null;
         }
 
         public void MoveTo(Vector3 position, Quaternion rotation)
@@ -53,11 +89,13 @@ namespace Systems.Store
             Sequence moveSequence = DOTween.Sequence();
             moveSequence.Join(transform.DOMove(position, moveDuration).SetEase(moveEase));
             moveSequence.Join(transform.DORotateQuaternion(rotation, moveDuration).SetEase(moveEase));
+            moveSequence.OnComplete(RestoreObject);
         }
 
         public void CancelMoving()
         {
             isBeingMoved = false;
+            RestoreObject();
         }
 
         public bool ValidatePlacement(Vector3 hitPoint, Vector3 hitNormal, int hitLayer, out Vector3 targetPosition, out Quaternion targetRotation)
@@ -73,7 +111,7 @@ namespace Systems.Store
 
             targetRotation = Quaternion.LookRotation(Vector3.ProjectOnPlane(transform.forward, hitNormal), hitNormal);
             
-            Vector3 shelfSize = Vector3.Scale(shelfCollider.size, transform.localScale);
+            Vector3 shelfSize = Vector3.Scale(rootCollider.size, transform.localScale);
             float shelfHalfHeight = shelfSize.y * 0.5f;
             targetPosition = hitPoint + (hitNormal * (shelfHalfHeight + placementHeightOffset));
 

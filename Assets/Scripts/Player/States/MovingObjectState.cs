@@ -4,17 +4,17 @@ using Interaction;
 
 namespace Player.States
 {
-    public class MovingShelfState : InteractionState
+    public class MovingObjectState : InteractionState
     {
-        private readonly IMovable movableShelf;
+        private readonly IMovable movableObject;
         private float pendingYRotation = 0f;
         private const float RotationStep = 30f;
         private const float gridSize = 0.5f;
 
-        public MovingShelfState(Interactor context, InteractionEvents events, IMovable shelf)
+        public MovingObjectState(Interactor context, InteractionEvents events, IMovable obj)
             : base(context, events)
         {
-            movableShelf = shelf;
+            movableObject = obj;
         }
 
         public override void Enter()
@@ -22,8 +22,8 @@ namespace Player.States
             events.RaisePromptChanged(null);
             events.RaiseHeldStateChanged(true);
             events.RaiseHoldTextChanged("إضغط E للوضع\nإضغط Q للإلغاء\nZ دوران يميناً \n X دوران يساراً");
-            movableShelf.StartMoving(ctx.gameObject);
-            ctx.Ghost.CreateGhost(movableShelf.Transform.gameObject);
+            movableObject.StartMoving(ctx.gameObject);
+            ctx.Ghost.CreateGhost(movableObject.Transform.gameObject);
             ctx.InputReader.OnRotatePressed += HandleRotate;
             if (GridManager.Instance != null)
             {
@@ -38,14 +38,14 @@ namespace Player.States
 
         public override void Update()
         {
-            LayerMask placementMask = movableShelf.PlacementMask;
-            float maxDistance = movableShelf.MaxPlacementDistance;
+            LayerMask placementMask = movableObject.PlacementMask;
+            float maxDistance = movableObject.MaxPlacementDistance;
 
             if (Physics.Raycast(ctx.PlayerCamera.transform.position, ctx.PlayerCamera.transform.forward, out RaycastHit hit, maxDistance, placementMask))
             {
-                if (movableShelf is MonoBehaviour mono && mono.TryGetComponent(out Systems.Store.MovableShelf shelf))
+                if (movableObject is MonoBehaviour mono && mono.TryGetComponent(out Systems.Store.MovableObject obj))
                 {
-                    bool valid = shelf.ValidatePlacement(hit.point, hit.normal, hit.collider.gameObject.layer, out Vector3 pos, out Quaternion rot);
+                    bool valid = obj.ValidatePlacement(hit.point, hit.normal, hit.collider.gameObject.layer, out Vector3 pos, out Quaternion rot);
 
                     pos = SnapToGrid(pos, gridSize);
                     Quaternion rotatedRot = rot * Quaternion.Euler(0f, pendingYRotation, 0f);
@@ -68,18 +68,18 @@ namespace Player.States
 
         public override void HandleInput()
         {
-            LayerMask placementMask = movableShelf.PlacementMask;
-            float maxDistance = movableShelf.MaxPlacementDistance;
+            LayerMask placementMask = movableObject.PlacementMask;
+            float maxDistance = movableObject.MaxPlacementDistance;
 
             if (Physics.Raycast(ctx.PlayerCamera.transform.position, ctx.PlayerCamera.transform.forward, out RaycastHit hit, maxDistance, placementMask))
             {
-                if (movableShelf is MonoBehaviour mono && mono.TryGetComponent(out Systems.Store.MovableShelf shelf))
+                if (movableObject is MonoBehaviour mono && mono.TryGetComponent(out Systems.Store.MovableObject obj))
                 {
-                    if (shelf.ValidatePlacement(hit.point, hit.normal, hit.collider.gameObject.layer, out Vector3 pos, out Quaternion rot))
+                    if (obj.ValidatePlacement(hit.point, hit.normal, hit.collider.gameObject.layer, out Vector3 pos, out Quaternion rot))
                     {
                         pos = SnapToGrid(pos, gridSize);
                         Quaternion rotatedRot = rot * Quaternion.Euler(0f, pendingYRotation, 0f);
-                        movableShelf.MoveTo(pos, rotatedRot);
+                        movableObject.MoveTo(pos, rotatedRot);
                         ExitState();
                         return;
                     }
@@ -96,7 +96,7 @@ namespace Player.States
 
         private void CancelMovement()
         {
-            movableShelf.CancelMoving();
+            movableObject.CancelMoving();
             ExitState();
         }
 

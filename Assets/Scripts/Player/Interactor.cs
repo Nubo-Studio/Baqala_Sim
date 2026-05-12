@@ -78,9 +78,9 @@ namespace Player
             {
                 holdingState.HandleThrow();
             }
-            else if (currentState is MovingShelfState movingShelfState)
+            else if (currentState is MovingObjectState movingObjectState)
             {
-                movingShelfState.HandleCancel();
+                movingObjectState.HandleCancel();
             }
         }
 
