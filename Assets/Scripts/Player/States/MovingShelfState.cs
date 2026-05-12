@@ -25,6 +25,10 @@ namespace Player.States
             movableShelf.StartMoving(ctx.gameObject);
             ctx.Ghost.CreateGhost(movableShelf.Transform.gameObject);
             ctx.InputReader.OnRotatePressed += HandleRotate;
+            if (GridManager.Instance != null)
+            {
+                GridManager.Instance.ToggleGrid(true);
+            }
         }
 
         private void HandleRotate(float direction)
@@ -117,6 +121,10 @@ namespace Player.States
             ctx.InputReader.OnRotatePressed -= HandleRotate;
             events.RaiseHeldStateChanged(false);
             events.RaiseHoldTextChanged(null);
+            if (GridManager.Instance != null)
+            {
+                GridManager.Instance.ToggleGrid(false);
+            }
         }
     }
 }
