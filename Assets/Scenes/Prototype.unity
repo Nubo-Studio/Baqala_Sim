@@ -3149,8 +3149,8 @@ MonoBehaviour:
   maxPlacementDistance: 5
   placementHeightOffset: 0.01
   currentPlaceMaterial: {fileID: 2100000, guid: 477a8cabe3e302247be46f488cb1eb14, type: 2}
-  moveDuration: 0.4
-  moveEase: 12
+  moveDuration: 1
+  moveEase: 16
 --- !u!65 &1740362784
 BoxCollider:
   m_ObjectHideFlags: 0
